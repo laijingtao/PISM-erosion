@@ -9,6 +9,8 @@ ymax=5381000
 
 version=1
 
+cd $PISM_DATA_DIR
+
 infile=Olympics_30m.tif
 
 for GRID  in 50 100 200 250 500 1000; do

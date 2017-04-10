@@ -290,7 +290,8 @@ def generate_stress_balance(stress_balance, additional_params_dict):
 
     params_dict = OrderedDict()
     params_dict['stress_balance'] = stress_balance
-    if stress_balance in ('ssa+sia'):
+    #if stress_balance in ('ssa+sia'):
+    if stress_balance in ['ssa+sia']:
         params_dict['options_left'] = ''
         # params_dict['cfbc'] = ''
         params_dict['sia_flow_law'] = 'gpbld3'
@@ -599,14 +600,13 @@ srun -l /bin/hostname | sort -n | awk \'{{print $2}}\' > ./nodes_$SLURM_JOBID
         
         header = """#!/bin/bash
 #SBATCH -n {cores}
-#SBATCH --mem-per-cpu=2048
+#SBATCH --mem-per-cpu=4096
 #SBATCH --time={walltime}
 #SBATCH --mail-user=jlai11@illinois.edu
 #SBATCH --mail-type=BEGIN
 #SBATCH --mail-type=END
 #SBATCH --mail-type=FAIL
 #SBATCH --export=PATH,LD_LIBRARY_PATH
-#SBATCH --output=pism.%j
 
 module list
 

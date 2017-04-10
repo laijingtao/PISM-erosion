@@ -61,6 +61,7 @@ parser.add_argument("--stress_balance", dest="stress_balance",
 
 options = parser.parse_args()
 
+
 nn = options.n
 odir = options.odir
 oformat = options.oformat
@@ -68,6 +69,9 @@ osize = options.osize
 queue = options.queue
 walltime = options.walltime
 system = options.system
+
+if system in ('keeling'):
+    pism_data_dir = os.environ['PISM_DATA_DIR']
 
 bed_version = options.bed_version
 climate = options.climate
@@ -84,9 +88,13 @@ input_file = options.input_file
 pism_dataname = 'pism_{domain}_{grid}m_v{version}.nc'.format(domain=domain.capitalize(),
                                                              grid=grid,
                                                              version=bed_version)
+if system in ('keeling'):
+    pism_dataname = pism_data_dir+pism_dataname
 state_dir = 'state'
 scalar_dir = 'scalar'
 spatial_dir = 'spatial'
+if system in ('keeling'): 
+    odir = pism_data_dir+odir
 if not os.path.isdir(odir):
     os.mkdir(odir)
 for tsdir in (scalar_dir, spatial_dir, state_dir):
@@ -99,9 +107,11 @@ if not os.path.isdir(odir_tmp):
 # Configuration File Setup
 pism_config = 'olympics_config'
 pism_config_nc = '.'.join([pism_config, 'nc'])
+if system in ('keeling'):
+    pism_config_nc = pism_data_dir+pism_config_nc
 pism_config_cdl = os.path.join('../config', '.'.join([pism_config, 'cdl']))
 # Anaconda libssl problem on chinook
-if system in ('chinook'):
+if system in ('chinook', 'keeling'):
     ncgen = '/usr/bin/ncgen'
 else:
     ncgen = 'ncgen'
@@ -122,7 +132,7 @@ ssa_n = (3.0)
 ssa_e = (1.0)
 
 # Model Parameters for Sensitivity Study
-ela_values = [1200.]
+ela_values = [1200]
 sia_e_values = [3.0]
 ppq_values = [0.50]
 tefo_values = [0.020]
@@ -210,7 +220,7 @@ for n, combination in enumerate(combinations):
         sb_params_dict['till_effective_fraction_overburden'] = tefo
         sb_params_dict['topg_to_phi'] = ttphi
         sb_params_dict['ssa_method'] = 'fd'
-
+        
         stress_balance_params_dict = generate_stress_balance(stress_balance, sb_params_dict)
 
         # Setup Climate Forcing
