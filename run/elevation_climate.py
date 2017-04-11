@@ -272,8 +272,8 @@ for n, combination in enumerate(combinations):
         f.write(cmd)
         cmd = ' '.join(['ncks -O -4', os.path.join(odir, outfile), os.path.join(odir, outfile), '\n'])
         f.write(cmd)
+   
 
-    
 scripts = uniquify_list(scripts)
 scripts_post = uniquify_list(scripts_post)
 print '\n'.join([script for script in scripts])

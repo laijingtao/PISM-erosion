@@ -612,7 +612,7 @@ module list
 
 cd $SLURM_SUBMIT_DIR
 
-""".format(queue=queue, walltime=walltime, nodes=nodes, ppn=ppn, cores=cores)
+""".format(walltime=walltime, cores=cores)
     elif system in ('pleiades'):
         
         header = """#PBS -S /bin/bash
