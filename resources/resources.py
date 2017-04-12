@@ -294,7 +294,9 @@ def generate_stress_balance(stress_balance, additional_params_dict):
     if stress_balance in ['ssa+sia']:
         params_dict['options_left'] = ''
         # params_dict['cfbc'] = ''
-        params_dict['sia_flow_law'] = 'gpbld3'
+        #params_dict['sia_flow_law'] = 'gpbld3'
+        # for pism0.7
+        params_dict['sia_flow_law'] = 'gpbld'
         params_dict['pseudo_plastic'] = ''
         params_dict['bed_smoother_range'] = 50
 

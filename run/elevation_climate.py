@@ -132,7 +132,7 @@ ssa_n = (3.0)
 ssa_e = (1.0)
 
 # Model Parameters for Sensitivity Study
-ela_values = [1200]
+ela_values = [1000, 1200, 1500]
 sia_e_values = [3.0]
 ppq_values = [0.50]
 tefo_values = [0.020]
