@@ -603,7 +603,6 @@ srun -l /bin/hostname | sort -n | awk \'{{print $2}}\' > ./nodes_$SLURM_JOBID
 #SBATCH --mem-per-cpu=4096
 #SBATCH --time={walltime}
 #SBATCH --mail-user=jlai11@illinois.edu
-#SBATCH --mail-type=BEGIN
 #SBATCH --mail-type=END
 #SBATCH --mail-type=FAIL
 #SBATCH --export=PATH,LD_LIBRARY_PATH

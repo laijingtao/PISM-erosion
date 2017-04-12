@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # Copyright (C) 2016 Andy Aschwanden
+# Modified by Jingtao Lai. 2017 Apr.
 
 import numpy as np
 import itertools
@@ -21,7 +22,7 @@ parser.description = "Generating scripts for prognostic simulations."
 parser.add_argument("-n", '--n_procs', dest="n", type=int,
                     help='''number of cores/processors. default=2.''', default=2)
 parser.add_argument("-w", '--wall_time', dest="walltime",
-                    help='''walltime. default: 12:00:00.''', default="12:00:00")
+                    help='''walltime. default: 24:00:00.''', default="24:00:00")
 parser.add_argument("-q", '--queue', dest="queue", choices=list_queues(),
                     help='''queue. default=t1standard.''', default='normal')
 parser.add_argument("--climate", dest="climate",
@@ -41,7 +42,7 @@ parser.add_argument("-f", "--o_format", dest="oformat",
                     help="output format", default='netcdf3')
 parser.add_argument("-g", "--grid", dest="grid", type=int,
                     choices=accepted_resolutions(),
-                    help="horizontal grid resolution", default=1000)
+                    help="horizontal grid resolution", default=500)
 parser.add_argument("-i", "--input_file", dest="input_file",
                     help="Input file to restart from", default=None)
 parser.add_argument("--o_dir", dest="odir",
@@ -70,7 +71,7 @@ queue = options.queue
 walltime = options.walltime
 system = options.system
 
-if system in ('keeling'):
+if system in ['keeling']:
     pism_data_dir = os.environ['PISM_DATA_DIR']
 
 bed_version = options.bed_version
@@ -88,12 +89,12 @@ input_file = options.input_file
 pism_dataname = 'pism_{domain}_{grid}m_v{version}.nc'.format(domain=domain.capitalize(),
                                                              grid=grid,
                                                              version=bed_version)
-if system in ('keeling'):
+if system in ['keeling']:
     pism_dataname = pism_data_dir+pism_dataname
 state_dir = 'state'
 scalar_dir = 'scalar'
 spatial_dir = 'spatial'
-if system in ('keeling'): 
+if system in ['keeling']:
     odir = pism_data_dir+odir
 if not os.path.isdir(odir):
     os.mkdir(odir)
@@ -107,11 +108,11 @@ if not os.path.isdir(odir_tmp):
 # Configuration File Setup
 pism_config = 'olympics_config'
 pism_config_nc = '.'.join([pism_config, 'nc'])
-if system in ('keeling'):
+if system in ['keeling']:
     pism_config_nc = pism_data_dir+pism_config_nc
 pism_config_cdl = os.path.join('../config', '.'.join([pism_config, 'cdl']))
 # Anaconda libssl problem on chinook
-if system in ('chinook', 'keeling'):
+if system in ['chinook', 'keeling']:
     ncgen = '/usr/bin/ncgen'
 else:
     ncgen = 'ncgen'
@@ -133,6 +134,8 @@ ssa_e = (1.0)
 
 # Model Parameters for Sensitivity Study
 ela_values = [1000, 1200, 1500]
+mb_min_values = [-1., -3., -5.]
+mb_max_values = [1., 3., 5.]
 sia_e_values = [3.0]
 ppq_values = [0.50]
 tefo_values = [0.020]
@@ -142,6 +145,8 @@ topg_min_values = [0]
 topg_max_values = [200]
 temp_lapse_rate_values = [5.0, 6.0]
 combinations = list(itertools.product(ela_values,
+                                      mb_min_values,
+                                      mb_max_values,
                                       sia_e_values,
                                       ppq_values,
                                       tefo_values,
@@ -154,16 +159,23 @@ tsstep = 'yearly'
 
 scripts = []
 scripts_post = []
+batch_scripts_dir = './'
+if system in ['keeling']:
+    batch_scripts_dir = './batch_scripts/'
+if not os.path.isdir(batch_scripts_dir):
+    os.mkdir(batch_scripts_dir)
 
 for n, combination in enumerate(combinations):
 
-    ela, sia_e, ppq, tefo, phi_min, phi_max, topg_min, topg_max = combination
+    ela, mb_min, mb_max, sia_e, ppq, tefo, phi_min, phi_max, topg_min, topg_max = combination
 
     ttphi = '{},{},{},{}'.format(phi_min, phi_max, topg_min, topg_max)
 
     name_options = OrderedDict()
     name_options['sb'] = stress_balance
     name_options['ela'] = ela
+    name_options['mb_min'] = mb_min
+    name_options['mb_max'] = mb_max
     experiment =  '_'.join([climate, '_'.join(['_'.join([k, str(v)]) for k, v in name_options.items()])])
 
     script = 'cc_{}_g{}m_{}.sh'.format(domain.lower(), grid, experiment)
@@ -171,7 +183,6 @@ for n, combination in enumerate(combinations):
     script_post = 'cc_{}_g{}m_{}_post.sh'.format(domain.lower(), grid, experiment)
     scripts_post.append(script_post)
 
-    
     for filename in (script):
         try:
             os.remove(filename)
@@ -179,15 +190,15 @@ for n, combination in enumerate(combinations):
             pass
 
     batch_header, batch_system = make_batch_header(system, nn, walltime, queue)
-            
-    with open(script, 'w') as f:
+
+    with open(batch_scripts_dir+script, 'w') as f:
 
         f.write(batch_header)
 
         outfile = '{domain}_g{grid}m_{experiment}_{start}_{end}a.nc'.format(domain=domain.lower(),
-                                                                           grid=grid,
-                                                                           experiment=experiment,
-                                                                           start=int(start),
+                                                                            grid=grid,
+                                                                            experiment=experiment,
+                                                                            start=int(start),
                                                                             end=int(end))
 
         prefix = generate_prefix_str(pism_exec)
@@ -205,7 +216,7 @@ for n, combination in enumerate(combinations):
         general_params_dict['o_format'] = oformat
         general_params_dict['o_size'] = osize
         general_params_dict['config_override'] = pism_config_nc
-        
+
         if input_file is None:
             grid_params_dict = generate_grid_description(grid, accepted_resolutions(), domain)
         else:
@@ -220,19 +231,21 @@ for n, combination in enumerate(combinations):
         sb_params_dict['till_effective_fraction_overburden'] = tefo
         sb_params_dict['topg_to_phi'] = ttphi
         sb_params_dict['ssa_method'] = 'fd'
-        
+
         stress_balance_params_dict = generate_stress_balance(stress_balance, sb_params_dict)
 
         # Setup Climate Forcing
         climate_params_dict = generate_climate(climate,
                                                ice_surface_temp='0,0,-100,5000',
-                                               climatic_mass_balance='-3.,3,0,{},2500'.format(ela))
-        
+                                               climatic_mass_balance='{},{},0,{},2500'.format(mb_min, mb_max, ela))
+
         # Setup Ocean Forcing
         ocean_params_dict = generate_ocean('null')
+
         # Setup Hydrology Model
         hydro_params_dict = generate_hydrology(hydrology)
 
+        # Setup Carving Model
         calving_params_dict = generate_calving('float_kill')
 
 
@@ -260,7 +273,7 @@ for n, combination in enumerate(combinations):
 
     post_header = make_batch_post_header(system)
 
-    with open(script_post, 'w') as f:
+    with open(batch_scripts_dir+script_post, 'w') as f:
 
         f.write(post_header)
 
@@ -272,7 +285,7 @@ for n, combination in enumerate(combinations):
         f.write(cmd)
         cmd = ' '.join(['ncks -O -4', os.path.join(odir, outfile), os.path.join(odir, outfile), '\n'])
         f.write(cmd)
-   
+
 
 scripts = uniquify_list(scripts)
 scripts_post = uniquify_list(scripts_post)
@@ -280,3 +293,12 @@ print '\n'.join([script for script in scripts])
 print('\nwritten\n')
 print '\n'.join([script for script in scripts_post])
 print('\nwritten\n')
+
+if system in ['keeling']:
+    with open('submit_batch.sh', 'w') as f:
+        f.write('#!/bin/bash\n\n')
+        f.write('cd ./batch_scripts\n')
+        for script in scripts:
+            f.write('sbatch {}\n'.format(script))
+    sub.call('chmod +x submit_batch.sh')
+
