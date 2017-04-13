@@ -194,7 +194,7 @@ for n, combination in enumerate(combinations):
     with open(batch_scripts_dir+script, 'w') as f:
 
         f.write(batch_header)
-
+        
         outfile = '{domain}_g{grid}m_{experiment}_{start}_{end}a.nc'.format(domain=domain.lower(),
                                                                             grid=grid,
                                                                             experiment=experiment,
@@ -278,7 +278,8 @@ for n, combination in enumerate(combinations):
         f.write(post_header)
 
         extra_file = spatial_ts_dict['extra_file']
-        myfiles = ' '.join(['{}_{:.3f}.nc'.format(extra_file, k) for k in np.arange(start + exstep, end, exstep)])
+        #myfiles = ' '.join(['{}_{:.3f}.nc'.format(extra_file, k) for k in np.arange(start + exstep, end, exstep)])
+        myfiles = ' '.join(['{}-{:012.3f}.nc'.format(extra_file, k) for k in np.arange(start + exstep, end, exstep)])
         myoutfile = extra_file + '.nc'
         myoutfile = os.path.join(odir, os.path.split(myoutfile)[-1])
         cmd = ' '.join(['ncrcat -O -6 -h', myfiles, myoutfile, '\n'])
