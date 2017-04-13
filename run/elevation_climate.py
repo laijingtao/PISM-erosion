@@ -42,7 +42,7 @@ parser.add_argument("-f", "--o_format", dest="oformat",
                     help="output format", default='netcdf3')
 parser.add_argument("-g", "--grid", dest="grid", type=int,
                     choices=accepted_resolutions(),
-                    help="horizontal grid resolution", default=500)
+                    help="horizontal grid resolution", default=1000)
 parser.add_argument("-i", "--input_file", dest="input_file",
                     help="Input file to restart from", default=None)
 parser.add_argument("--o_dir", dest="odir",
@@ -300,5 +300,5 @@ if system in ['keeling']:
         f.write('cd ./batch_scripts\n')
         for script in scripts:
             f.write('sbatch {}\n'.format(script))
-    sub.call('chmod +x submit_batch.sh')
+    sub.call(['chmod', '+x', 'submit_batch.sh'])
 
