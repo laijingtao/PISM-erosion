@@ -267,8 +267,9 @@ for n, combination in enumerate(combinations):
 
         f.write(cmd)
         f.write('\n')
+        f.write('echo \"Done!\"\n')
         f.write('\n')
-        f.write('{} {}\n'.format(batch_system['submit'], script_post))
+        f.write('bash {}\n'.format(script_post))
         f.write('\n')
 
     post_header = make_batch_post_header(system)
