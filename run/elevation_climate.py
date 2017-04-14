@@ -305,3 +305,4 @@ if system in ['keeling']:
             f.write('sbatch {}\n'.format(script))
     sub.call(['chmod', 'u+x', 'submit_batch.sh'])
 
+print 'test'
