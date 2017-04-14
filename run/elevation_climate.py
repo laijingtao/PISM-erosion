@@ -133,7 +133,7 @@ ssa_n = (3.0)
 ssa_e = (1.0)
 
 # Model Parameters for Sensitivity Study
-ela_values = [1000, 1200, 1500]
+ela_values = [1000, 1500, 2000]
 mb_min_values = [-1., -3., -5.]
 mb_max_values = [1., 3., 5.]
 sia_e_values = [3.0]
@@ -267,7 +267,8 @@ for n, combination in enumerate(combinations):
 
         f.write(cmd)
         f.write('\n')
-        f.write('echo \"Done!\"\n')
+        f.write('\n')
+        f.write('echo \"Done\"\n')
         f.write('\n')
         f.write('bash {}\n'.format(script_post))
         f.write('\n')
@@ -302,5 +303,5 @@ if system in ['keeling']:
         f.write('cd ./batch_scripts\n')
         for script in scripts:
             f.write('sbatch {}\n'.format(script))
-    sub.call(['chmod', '+x', 'submit_batch.sh'])
+    sub.call(['chmod', 'u+x', 'submit_batch.sh'])
 
