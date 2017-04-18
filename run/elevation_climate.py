@@ -134,8 +134,8 @@ ssa_e = (1.0)
 
 # Model Parameters for Sensitivity Study
 ela_values = [1500]
-mb_min_values = [-1.]
-mb_max_values = [1.]
+mb_min_values = [-3.]
+mb_max_values = [3.]
 sia_e_values = [3.0]
 ppq_values = [0.50]
 tefo_values = [0.020]
@@ -255,15 +255,23 @@ for n, combination in enumerate(combinations):
         scalar_ts_dict = generate_scalar_ts(outfile, tsstep, odir=os.path.join(odir, scalar_dir))
 
         # Merge All Parameter Dictionaries
-        all_params_dict = merge_dicts(general_params_dict, grid_params_dict, stress_balance_params_dict, climate_params_dict, ocean_params_dict, hydro_params_dict, calving_params_dict, spatial_ts_dict, scalar_ts_dict)
+        all_params_dict = merge_dicts(general_params_dict, 
+                                      grid_params_dict, 
+                                      stress_balance_params_dict, 
+                                      climate_params_dict, 
+                                      ocean_params_dict, 
+                                      hydro_params_dict, 
+                                      calving_params_dict, 
+                                      spatial_ts_dict, 
+                                      scalar_ts_dict)
         all_params = ' '.join([' '.join(['-' + k, str(v)]) for k, v in all_params_dict.items()])
 
         if system in ('debug'):
-            cmd = ' '.join([batch_system['mpido'], prefix, all_params, '2>&1 | tee {outdir}/job.${batch}'.format(outdir=odir,
-                                                                                                                 batch=batch_system['job_id'])])
+            cmd = ' '.join([batch_system['mpido'], prefix, all_params, 
+                           '2>&1 | tee {outdir}/job.${batch}'.format(outdir=odir, batch=batch_system['job_id'])])
         else:
-            cmd = ' '.join([batch_system['mpido'], prefix, all_params, '> {outdir}/job.${batch}  2>&1'.format(outdir=odir,
-                                                                                                              batch=batch_system['job_id'])])
+            cmd = ' '.join([batch_system['mpido'], prefix, all_params, 
+                           '> {outdir}/job.${batch}  2>&1'.format(outdir=odir, batch=batch_system['job_id'])])
 
         f.write(cmd)
         f.write('\n')
@@ -281,12 +289,14 @@ for n, combination in enumerate(combinations):
 
         extra_file = spatial_ts_dict['extra_file']
         #myfiles = ' '.join(['{}_{:.3f}.nc'.format(extra_file, k) for k in np.arange(start + exstep, end, exstep)])
-        myfiles = ' '.join(['{}-{:012.3f}.nc'.format(extra_file, k) for k in np.arange(start + exstep, end, exstep)])
+        myfiles = ' '.join(['{}-{:012.3f}.nc'.format(extra_file, k) \
+                            for k in np.arange(start + exstep, end, exstep)])
         myoutfile = extra_file + '.nc'
         myoutfile = os.path.join(odir, os.path.split(myoutfile)[-1])
         cmd = ' '.join(['ncrcat -O -6 -h', myfiles, myoutfile, '\n'])
         f.write(cmd)
-        cmd = ' '.join(['ncks -O -4', os.path.join(odir, outfile), os.path.join(odir, outfile), '\n'])
+        cmd = ' '.join(['ncks -O -4', os.path.join(odir, state_dir, outfile),
+                        os.path.join(odir, state_dir, outfile), '\n'])
         f.write(cmd)
 
 
