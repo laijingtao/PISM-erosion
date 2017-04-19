@@ -11,7 +11,7 @@ version=1
 
 cd $PISM_DATA_DIR
 
-infile=Olympics_30m.tif
+infile=geotiff_olympics/Olympics_30m.tif
 
 for GRID  in 50 100 200 250 500 1000; do
     outfile=pism_Olympics_${GRID}m_v${version}.nc
@@ -23,4 +23,6 @@ for GRID  in 50 100 200 250 500 1000; do
     ncatted -a standard_name,topg,o,c,"bedrock_altitude" -a units,topg,o,c,"m" -a _FillValue,topg,d,, $outfile
     ncap2 -O -s "where(topg<0) {topg=-0.;};"  $outfile  $outfile
 done
+
+rm tmp_*
 exit
