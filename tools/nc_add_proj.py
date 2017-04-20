@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Modified bu Jingtao Lai, UIUC, Apr., 2017
+# Modified by Jingtao Lai, Geology@UIUC, Apr. 2017
 
 # @package nc2cdo
 # \author Andy Aschwanden, University of Alaska Fairbanks, USA
@@ -23,7 +23,6 @@
 #
 # \verbatim $ nc2cdo.py foo.nc \endverbatim
 
-
 import sys
 import numpy as np
 from argparse import ArgumentParser
@@ -39,7 +38,8 @@ except:
 
 # Set up the option parser
 parser = ArgumentParser()
-parser.description = '''Script adds lat/lon to the netCDF file. Either a global attribute "projection", a mapping variable, or a command-line proj4 string or a EPSG code must be given.'''
+parser.description = '''Script adds lat/lon to the netCDF file. Either a global attribute "projection", \
+                     a mapping variable, or a command-line proj4 string or a EPSG code must be given.'''
 parser.add_argument("FILE", nargs=1)
 parser.add_argument("--no_bounds", dest="bounds", action="store_false",
                     help="do not add lat/lon bounds.", default=True)
@@ -170,8 +170,7 @@ if __name__ == "__main__":
         # Get projection from file
         proj = get_projection_from_file(nc)
 
-    # If it does not yet exist, create dimension 'grid_corner_dim_name'
-    if bounds and grid_corner_dim_name not in nc.dimensions.keys():
+    if bounds:
         for corner in range(0, grid_corners):
             ## grid_corners in x-direction
             gc_easting[:, corner] = easting + de_vec[corner]
@@ -183,40 +182,46 @@ if __name__ == "__main__":
             # project grid corners from x-y to lat-lon space
             gc_lon[:, :, corner], gc_lat[:, :, corner] = proj(
                 gc_ee, gc_nn, inverse=True)
-
+            
+    # If it does not yet exist, create dimension 'grid_corner_dim_name'
+    if bounds and grid_corner_dim_name not in nc.dimensions.keys():
         nc.createDimension(grid_corner_dim_name, size=grid_corners)
 
-        var = 'lon_bnds'
-        # Create variable 'lon_bnds'
+    var = 'lon_bnds'
+    # Create variable 'lon_bnds'
+    if not var in nc.variables.keys():
         var_out = nc.createVariable(
             var, 'f', dimensions=(ydim, xdim, grid_corner_dim_name))
-        # Assign units to variable 'lon_bnds'
-        var_out.units = "degreesE"
-        # Assign values to variable 'lon_nds'
-        var_out[:] = gc_lon
+    else:
+        var_out = nc.variables[var]
+    # Assign units to variable 'lon_bnds'
+    var_out.units = "degreesE"
+    # Assign values to variable 'lon_nds'
+    var_out[:] = gc_lon
 
-        var = 'lat_bnds'
-        # Create variable 'lat_bnds'
+    var = 'lat_bnds'
+    # Create variable 'lat_bnds'
+    if not var in nc.variables.keys():
         var_out = nc.createVariable(
             var, 'f', dimensions=(ydim, xdim, grid_corner_dim_name))
-        # Assign units to variable 'lat_bnds'
-        var_out.units = "degreesN"
-        # Assign values to variable 'lat_bnds'
-        var_out[:] = gc_lat
+    else:
+        var_out = nc.variables[var]
+    # Assign units to variable 'lat_bnds'
+    var_out.units = "degreesN"
+    # Assign values to variable 'lat_bnds'
+    var_out[:] = gc_lat
 
-    if (not 'lon' in nc.variables.keys()) or (not 'lat' in nc.variables.keys()):
-        print("No lat/lon coordinates found, creating them")
-        ee, nn = np.meshgrid(easting, northing)
-        lon, lat = proj(ee, nn, inverse=True)
+    ee, nn = np.meshgrid(easting, northing)
+    lon, lat = proj(ee, nn, inverse=True)
 
     var = 'lon'
     # If it does not yet exist, create variable 'lon'
     if not var in nc.variables.keys():
         var_out = nc.createVariable(var, 'f', dimensions=(ydim, xdim))
-        # Assign values to variable 'lon'
-        var_out[:] = lon
     else:
         var_out = nc.variables[var]
+    # Assign values to variable 'lon'
+    var_out[:] = lon
     # Assign units to variable 'lon'
     var_out.units = "degreesE"
     # Assign long name to variable 'lon'
@@ -231,9 +236,10 @@ if __name__ == "__main__":
     # If it does not yet exist, create variable 'lat'
     if not var in nc.variables.keys():
         var_out = nc.createVariable(var, 'f', dimensions=(ydim, xdim))
-        var_out[:] = lat
     else:
         var_out = nc.variables[var]
+    # Assign values to variable 'lat'
+    var_out[:] = lat
     # Assign units to variable 'lat'
     var_out.units = "degreesN"
     # Assign long name to variable 'lat'
@@ -267,7 +273,7 @@ if __name__ == "__main__":
         nc.history = histstr + nc.history
     else:
         nc.history = histstr
-    import pdb;pdb.set_trace()
+
     for attr in ("projection", "proj4"):
         if hasattr(nc, attr):
             delattr(nc, attr)
