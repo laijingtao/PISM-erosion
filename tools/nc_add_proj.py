@@ -50,6 +50,7 @@ parser.add_argument("--srs", dest="srs",
 options = parser.parse_args()
 args = options.FILE
 srs = options.srs
+# JL: should be not(--no_bounds)?
 bounds = options.bounds
 
 if len(args) == 1:
@@ -211,7 +212,9 @@ if __name__ == "__main__":
     # Assign values to variable 'lat_bnds'
     var_out[:] = gc_lat
 
-    ee, nn = np.meshgrid(easting, northing)
+    # JL: should be meshgrid(northing, easting) rather than meshgrid(easting,
+    # northing)
+    nn, ee = np.meshgrid(northing, easting)
     lon, lat = proj(ee, nn, inverse=True)
 
     var = 'lon'
