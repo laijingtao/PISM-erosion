@@ -13,5 +13,5 @@ __pycache__/
 *.jpg
 *.txt
 *.nc
-gmt.history
+*.pdf
 *.xyz
