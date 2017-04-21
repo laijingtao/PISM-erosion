@@ -7,9 +7,10 @@ outfile=test.jpg
 var=thk
 cbartitle=Thickness
 cbarunit=m
-cbar=0/1800/100
+cbar=0/2000/100
 range=-124.8/-122.6/47/48.4
 
+# set up the option parser
 while [[ $# -gt 1 ]]
 do
     key="$1"
@@ -26,6 +27,18 @@ do
             var="$2"
             shift
         ;;
+        --cbar)
+            cbar="$2"
+            shift
+        ;;
+        --title)
+            cbartitle="$2"
+            shift
+        ;;
+        --unit)
+            cbarunit="$2"
+            shift
+        ;;
     esac
 shift
 done
@@ -38,9 +51,9 @@ source activate gmt
 xyz2grd tmp.xyz -Gtmp.nc -R$range -I0.5m
 
 psbasemap -R$range -Jm6 -Ba1f0.25 -V -P -K -X1.5 -Y2 >> tmp.ps 
-makecpt -T$cbar -Cjet >tmp.cpt
+makecpt -T$cbar -Cjet -Z >tmp.cpt
 grdimage tmp.nc -Ctmp.cpt -Jm -E300 -nb -Q -P -O -K >> tmp.ps
-psscale -Dx15.5c/0.5c+w12c/0.5c -Ctmp.cpt -Baf -Bx+l$cbartitle -By+l$cbarunit -O >> tmp.ps
+psscale -Dx15.5c/0.3c+w12c/0.5c -Ctmp.cpt -Baf -Bx+l$cbartitle -By+l$cbarunit -O >> tmp.ps
 
 #ps2pdf tmp.ps $outfile
 psconvert tmp.ps -A -Tj

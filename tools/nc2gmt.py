@@ -161,7 +161,8 @@ else:
 
 lon, lat = proj(ee, nn, inverse=True)
 
-z_out[np.where(z_out==0)] = np.nan
+z_out[np.where(np.isnan(z_out))] = 0.0
+z_out[np.where(z_out<=0.)] = np.nan
 
 with open(outfile, 'w') as f:
    n, m = z_out.shape
