@@ -9,6 +9,9 @@ __pycache__/
 # Jupyter Notebook
 .ipynb_checkpoints
 
+# local slurm scripts
+run/batch_scripts/
+
 # data
 *.jpg
 *.txt
