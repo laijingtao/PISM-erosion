@@ -1,17 +1,24 @@
 #!/bin/bash
 
-python ../tools/nc2xyz.py -i test.nc -o tmp.xyz -v topg
+# change parameters here
+infile=test.nc
+outfile=test.jpg
+cbartitle=Elevation
+cbarunit=m
+cbar=0/2500/100
+range=-124.8/-122.6/47/48.4
+
+#python ../tools/nc2xyz.py -i $infile -o tmp.xyz -v thk
+python ../tools/nc2gmt.py -i $infile -o tmp.xyz -v topg --srs "+init=epsg:26710" --interp True
 
 source activate gmt
 
-outfile=test.jpg
+xyz2grd tmp.xyz -Gtmp.nc -R$range -I0.5m
 
-xyz2grd tmp.xyz -Gtmp.nc -R-125/-122.6/47/48.5 -I1m
-
-psbasemap -R-125/-122.6/47/48.5 -Jm6 -Ba1f0.5 -V -P -K -X1.5 -Y2 >> tmp.ps 
-makecpt -T0/2200/200 -Cjet >tmp.cpt
-grdimage tmp.nc -Jm6 -E300 -P -O -K >> tmp.ps
-psscale -Dx16c/0.8c+w12c/0.5c -O -Ctmp.cpt >> tmp.ps
+psbasemap -R$range -Jm6 -Ba1f0.25 -V -P -K -X1.5 -Y2 >> tmp.ps 
+makecpt -T$cbar -Cdem2 >tmp.cpt
+grdimage tmp.nc -Ctmp.cpt -Jm -E300 -nb -Q -P -O -K >> tmp.ps
+psscale -Dx15.5c/0.5c+w12c/0.5c -Ctmp.cpt -Baf -Bx+l$cbartitle -By+l$cbarunit -O >> tmp.ps
 
 #ps2pdf tmp.ps $outfile
 psconvert tmp.ps -A -Tj
@@ -20,3 +27,5 @@ rm gmt.history
 rm tmp*
 
 source deactivate gmt
+
+echo "GMT: plotting finished."

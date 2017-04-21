@@ -19,7 +19,8 @@ except:
 
 # Set up the option parser
 parser = ArgumentParser()
-parser.description = '''Extract the lon, lat and z inforation from the original file.'''
+parser.description = '''Extract the lon, lat and z inforation from the \
+                        original file, and write to a xyz file.'''
 parser.add_argument("-i", "--input", dest="infile",
                     help="Input file.", default=None)
 parser.add_argument("-o", "--output", dest="outfile",
@@ -53,6 +54,8 @@ z = indata.variables[var][:]
 z = np.squeeze(z)
 
 indata.close()
+
+z[np.where(z==0)] = np.nan
 
 with open(outfile, 'w') as f:
    n, m = x.shape
