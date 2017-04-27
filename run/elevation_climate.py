@@ -294,7 +294,7 @@ for n, combination in enumerate(combinations):
         myfiles = ' '.join(['{}-{:012.3f}.nc'.format(extra_file, k) \
                             for k in np.arange(start + exstep, end, exstep)])
         myoutfile = extra_file + '.nc'
-        myoutfile = os.path.join(odir, os.path.split(myoutfile)[-1])
+        myoutfile = os.path.join(odir, spatial_dir, os.path.split(myoutfile)[-1])
         cmd = ' '.join(['ncrcat -O -6 -h', myfiles, myoutfile, '\n'])
         f.write(cmd)
         cmd = ' '.join(['ncks -O -4', os.path.join(odir, state_dir, outfile),
