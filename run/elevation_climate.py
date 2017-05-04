@@ -111,8 +111,8 @@ pism_config_nc = '.'.join([pism_config, 'nc'])
 if system in ['keeling']:
     pism_config_nc = pism_data_dir+pism_config_nc
 pism_config_cdl = os.path.join('../config', '.'.join([pism_config, 'cdl']))
-# Anaconda libssl problem on chinook
-if system in ['chinook', 'keeling']:
+# Anaconda libssl problem
+if system in ['chinook', 'keeling', 'debug']:
     ncgen = '/usr/bin/ncgen'
 else:
     ncgen = 'ncgen'
