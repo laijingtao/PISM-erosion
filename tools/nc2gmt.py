@@ -113,6 +113,8 @@ if not(var in indata.variables.keys()):
 x_in = indata.variables['x'][:]
 y_in = indata.variables['y'][:]
 z_in = indata.variables[var][:]
+z_in = np.squeeze(z_in)
+z_in = z_in.astype(float)
 
 if srs:
     # use projection from command line
@@ -125,8 +127,6 @@ else:
     proj = get_projection_from_file(indata)
 
 indata.close()
-
-z_in = np.squeeze(z_in)
 
 if interp_flag:
     print('nc2gmt.py: Interpolation is on. Interpolation factor is '+str(interp_factor))
@@ -146,7 +146,10 @@ if interp_flag:
         tmp = np.linspace(y_in[i], y_in[i+1], interp_factor+1, dtype='int')
         northing[index[0:len(index)-1]] = tmp[0:len(index)-1]
     northing[ny*interp_factor-1] = y_in[ny-1]
-
+    
+    #ee, nn = np.meshgrid(easting, northing)
+    #xx, yy = np.meshgrid(x_in, y_in)
+    # the following two lines are for weird x/y error in pism 0.7
     nn, ee = np.meshgrid(northing, easting)
     yy, xx = np.meshgrid(y_in, x_in)
     xx = np.reshape(xx, nx*ny)
@@ -157,6 +160,8 @@ else:
     easting = x_in
     northing = y_in
     z_out = z_in
+    #ee, nn = np.meshgrid(easting, northing)
+    # the following line is for weird x/y error in pism 0.7
     nn, ee = np.meshgrid(northing, easting)
 
 lon, lat = proj(ee, nn, inverse=True)

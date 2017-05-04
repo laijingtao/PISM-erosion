@@ -52,10 +52,12 @@ x = indata.variables['lon'][:]
 y = indata.variables['lat'][:]
 z = indata.variables[var][:]
 z = np.squeeze(z)
+z = z.astype(float)
 
 indata.close()
 
-z[np.where(z==0)] = np.nan
+z[np.where(np.isnan(z))] = 0.0
+z[np.where(z<=0.)] = np.nan
 
 with open(outfile, 'w') as f:
    n, m = x.shape

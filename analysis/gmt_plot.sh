@@ -43,7 +43,7 @@ do
 shift
 done
 
-#python ../tools/nc2xyz.py -i $infile -o tmp.xyz -v thk
+#python ../tools/nc2xyz.py -i $infile -o tmp.xyz -v $var
 python ../tools/nc2gmt.py -i $infile -o tmp.xyz -v $var --srs "+init=epsg:26710" --interp True
 
 #source activate gmt
@@ -64,3 +64,7 @@ rm tmp*
 #source deactivate gmt
 
 echo "GMT: plotting finished."
+#exit
+
+echo "moving to windows /jtlai/Work/Research/glacier/plot"
+mv $outfile $WIN_HOME/Work/Research/glacier/plot

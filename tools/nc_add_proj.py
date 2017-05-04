@@ -212,8 +212,9 @@ if __name__ == "__main__":
     # Assign values to variable 'lat_bnds'
     var_out[:] = gc_lat
 
-    # JL: should be meshgrid(northing, easting) rather than meshgrid(easting,
-    # northing)
+    #ee, nn = np.meshgrid(easting, northing)
+    # JL: Because of the weird x/y error in pism 0.7, 
+    # should be meshgrid(northing, easting) rather than meshgrid(easting, northing)
     nn, ee = np.meshgrid(northing, easting)
     lon, lat = proj(ee, nn, inverse=True)
 
