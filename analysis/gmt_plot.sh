@@ -9,7 +9,7 @@ cbartitle=Thickness
 cbarunit=m
 cbar=0/2000/100
 #range=-124.8/-122.6/47/48.4
-range=-124.5/-122.75/47.25/48.15
+range=-124.5/-122.75/47.25/48.25
 
 # set up the option parser
 while [[ $# -gt 1 ]]
