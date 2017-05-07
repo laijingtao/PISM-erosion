@@ -33,7 +33,7 @@ rm tmp_*
 xmin=400000
 ymin=5231000
 xmax=523000
-ymax=5341000
+ymax=5351000
 
 version=1
 
