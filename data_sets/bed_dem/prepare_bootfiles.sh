@@ -32,8 +32,8 @@ rm tmp_*
 # Domain size
 xmin=400000
 ymin=5231000
-xmax=523000
-ymax=5351000
+xmax=520000
+ymax=5331000
 
 version=1
 
