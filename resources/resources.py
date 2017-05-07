@@ -12,6 +12,14 @@ from collections import OrderedDict
 import os
 
 
+def str2bool(v):
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    if v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        print('Boolean value expected.')
+
 def accepted_resolutions():
 
     return (50, 100, 200, 250, 500, 1000, 2000, 5000)

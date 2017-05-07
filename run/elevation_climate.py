@@ -45,6 +45,8 @@ parser.add_argument("-g", "--grid", dest="grid", type=int,
                     help="horizontal grid resolution", default=1000)
 parser.add_argument("-i", "--input_file", dest="input_file",
                     help="Input file to restart from", default=None)
+parser.add_argument("--bootstrap", dest="bootstrap",
+                    help="Turn on/off bootstrap when -i is provided", default=False)
 parser.add_argument("--o_dir", dest="odir",
                     help="output directory. Default: current directory", default='test')
 parser.add_argument("--o_size", dest="osize",
@@ -86,6 +88,9 @@ exstep = options.exstep
 domain = options.domain
 pism_exec = generate_domain(domain)
 input_file = options.input_file
+bootstrap = options.bootstrap
+if input_file is None:
+    bootstrap = True
 pism_dataname = 'pism_{domain}_{grid}m_v{version}.nc'.format(domain=domain.capitalize(),
                                                              grid=grid,
                                                              version=bed_version)
@@ -176,7 +181,7 @@ for n, combination in enumerate(combinations):
     name_options['ela'] = ela
     name_options['mb_min'] = mb_min
     #name_options['mb_max'] = mb_max
-    #paried max/min
+    #paried max/min -JL
     name_options['mb_max'] = -mb_min
     experiment =  '_'.join([climate, '_'.join(['_'.join([k, str(v)]) for k, v in name_options.items()])])
 
@@ -212,6 +217,8 @@ for n, combination in enumerate(combinations):
             general_params_dict['bootstrap'] = ''
         else:
             general_params_dict['i'] = input_file
+            if bootstrap:
+                general_params_dict['bootstrap'] = ''
         general_params_dict['ys'] = start
         general_params_dict['ye'] = end
         general_params_dict['o'] = os.path.join(odir, state_dir, outfile)
@@ -222,8 +229,13 @@ for n, combination in enumerate(combinations):
         if input_file is None:
             grid_params_dict = generate_grid_description(grid, accepted_resolutions(), domain)
         else:
-            grid_params_dict = generate_grid_description(grid, accepted_resolutions(), domain, restart=True)
-        import pdb;pdb.set_trace()
+            if bootstrap:
+                grid_params_dict = generate_grid_description(grid, accepted_resolutions(), 
+                                                             domain, restart=False)
+            else:
+                grid_params_dict = generate_grid_description(grid, accepted_resolutions(), 
+                                                             domain, restart=True)
+
         # Setup Stress Balance Paramters
         sb_params_dict = OrderedDict()
         sb_params_dict['sia_e'] = sia_e
