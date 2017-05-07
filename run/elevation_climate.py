@@ -223,7 +223,7 @@ for n, combination in enumerate(combinations):
             grid_params_dict = generate_grid_description(grid, accepted_resolutions(), domain)
         else:
             grid_params_dict = generate_grid_description(grid, accepted_resolutions(), domain, restart=True)
-
+        import pdb;pdb.set_trace()
         # Setup Stress Balance Paramters
         sb_params_dict = OrderedDict()
         sb_params_dict['sia_e'] = sia_e
