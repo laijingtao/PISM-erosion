@@ -4,10 +4,10 @@ set -e
 # change parameters here
 infile=test.nc
 outfile=test.jpg
-var=thk
-cbartitle=Thickness
+var=topg
+cbartitle=Elevation
 cbarunit=m
-cbar=0/2000/100
+cbar=0/2200/100
 #range=-124.8/-122.6/47/48.4
 range=-124.5/-122.75/47.25/48.25
 
@@ -44,8 +44,8 @@ do
 shift
 done
 
-#python ../tools/nc2xyz.py -i $infile -o tmp.xyz -v $var
-python ../tools/nc2gmt.py -i $infile -o tmp.xyz -v $var --srs "+init=epsg:26710" --interp True
+#python ./tools/nc2xyz.py -i $infile -o tmp.xyz -v $var
+python ./tools/nc2gmt.py -i $infile -o tmp.xyz -v $var --srs "+init=epsg:26710" --interp True
 
 #source activate gmt
 

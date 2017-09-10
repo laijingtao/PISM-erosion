@@ -147,11 +147,11 @@ if interp_flag:
         northing[index[0:len(index)-1]] = tmp[0:len(index)-1]
     northing[ny*interp_factor-1] = y_in[ny-1]
     
-    #ee, nn = np.meshgrid(easting, northing)
-    #xx, yy = np.meshgrid(x_in, y_in)
+    ee, nn = np.meshgrid(easting, northing)
+    xx, yy = np.meshgrid(x_in, y_in)
     # the following two lines are for weird x/y error in pism 0.7
-    nn, ee = np.meshgrid(northing, easting)
-    yy, xx = np.meshgrid(y_in, x_in)
+    #nn, ee = np.meshgrid(northing, easting)
+    #yy, xx = np.meshgrid(y_in, x_in)
     xx = np.reshape(xx, nx*ny)
     yy = np.reshape(yy, nx*ny)
     z_in = np.reshape(z_in, nx*ny)
@@ -160,9 +160,9 @@ else:
     easting = x_in
     northing = y_in
     z_out = z_in
-    #ee, nn = np.meshgrid(easting, northing)
+    ee, nn = np.meshgrid(easting, northing)
     # the following line is for weird x/y error in pism 0.7
-    nn, ee = np.meshgrid(northing, easting)
+    #nn, ee = np.meshgrid(northing, easting)
 
 lon, lat = proj(ee, nn, inverse=True)
 
