@@ -20,3 +20,8 @@ run/batch_scripts/
 *.ps
 *.xyz
 *.tif
+
+# tmp file
+tmp*
+*.tmp
+*.swp
