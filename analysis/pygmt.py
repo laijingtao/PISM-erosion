@@ -36,12 +36,16 @@ def main(*args, **kwargs):
         region = '-124.5/-122.75/47.25/48.25'
     try:
         cbartitle = kwargs['cbartitle']
+        if cbartitle is None:
+            cbartitle = var
     except:
-        cbartitle = 'Elevation'
+        cbartitle = var
     try:
         cbarunit = kwargs['cbarunit']
+        if cbarunit is None:
+            cbarunit = ' '
     except:
-        cbarunit = 'm'
+        cbarunit = ' '
     try:
         cbarrange = kwargs['cbarrange']
     except:
@@ -61,14 +65,14 @@ def main(*args, **kwargs):
         z_in = indata.variables[var][:]
         z_in = np.squeeze(z_in)
         z_in = z_in.astype(float)
-        cbarrange = str(int(z_in.min()))+'/'+str(int(z_in.max()))+'/'\
+        cbarrange = str(z_in.min())+'/'+str(z_in.max())+'/'\
             +str((z_in.max()-z_in.min())/10.0)
         indata.close()
 
     # convert nc data to xyz data
     print 'Converting data ...'
     nc2gmt.main(infile=infile, outfile='tmp.xyz', var=var,
-                srs='+init=epsg:26710', interp_flat='True')
+                srs='+init=epsg:26710', interp_flag='True')
 
     with open('tmp.gmt', 'w') as f:
         cmd = ['gmt', 'xyz2grd', 'tmp.xyz', '-Gtmp.nc', '-R'+region, '-I0.5m']
@@ -115,9 +119,9 @@ if __name__=='__main__':
     parser.add_argument('-r', '--region', dest='region',
                         default='-124.5/-122.75/47.25/48.25')
     parser.add_argument('--cbartitle', dest='cbartitle',
-                        default='Elevation')
+                        default=None)
     parser.add_argument('--cbarunit', dest='cbarunit',
-                        default='m')
+                        default=None)
     parser.add_argument('--cbarrange', dest='cbarrange',
                         default='auto')
     

@@ -12,8 +12,8 @@ except:
     import subprocess as sub
 from collections import OrderedDict
 from argparse import ArgumentParser
-sys.path.append('../../resources/')
-from resources import *
+#sys.path.append('../../resources/')
+#from resources import *
 
 
 def generate_file_names():
@@ -59,7 +59,7 @@ def calc_erosion(infile=None, outfile=None):
         outfile = infile
     
     cmd = ['ncap2', '-O', '-s',
-           '"erosion_1=1e-4*velsurf_mag;erosion_2=2.7e-7*velsurf_mag^2.02;"',
+           'erosion_1=1e-4*velbase_mag;erosion_2=2.7e-7*velbase_mag^2.02;',
            infile, outfile]
     #print sub.list2cmdline(cmd)
     sub.call(cmd)
