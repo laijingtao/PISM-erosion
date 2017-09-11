@@ -12,7 +12,7 @@ except:
     import subprocess as sub
 from collections import OrderedDict
 from argparse import ArgumentParser
-sys.path.append('../resources/')
+sys.path.append('../../resources/')
 from resources import *
 
 

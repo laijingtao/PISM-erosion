@@ -9,6 +9,8 @@ except:
     import subprocess as sub
 from argparse import ArgumentParser
 import numpy as np
+sys.path.append('./tools')
+import nc2gmt
 
 inpath = './'
 outpath = '/mnt/d/jlai11/pism-olympics/plot'
@@ -39,9 +41,11 @@ if cbarrange == 'Auto':
 
 # convert nc data to xyz data
 print 'Converting data ...'
-cmd = ['python', './tools/nc2gmt.py', '-i', infile, '-o', 'tmp.xyz',
-        '-v', var, '--srs', '+init=epsg:26710', '--interp', 'True']
-sub.call(cmd)
+nc2gmt.main(infile=infile, outfile='tmp.xyz', var=var,
+            srs='+init=epsg:26710', interp_flat='True')
+#cmd = ['python', './tools/nc2gmt.py', '-i', infile, '-o', 'tmp.xyz',
+#        '-v', var, '--srs', '+init=epsg:26710', '--interp', 'True']
+#sub.call(cmd)
 
 with open('tmp.gmt', 'w') as f:
     cmd = ['gmt', 'xyz2grd', 'tmp.xyz', '-Gtmp.nc', '-R'+region, '-I0.5m']
