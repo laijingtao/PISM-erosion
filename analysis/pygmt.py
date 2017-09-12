@@ -24,7 +24,7 @@ def main(*args, **kwargs):
     try:
         outpath = kwargs['outpath']
     except:
-        outpath = '/mnt/d/jlai11/pism-olympics/plot'
+        outpath = '/mnt/c/Users/jtlai/Work/Research/glacier/plot/'
     try:
         var = kwargs['var']
     except:
@@ -113,7 +113,7 @@ if __name__=='__main__':
                         help='Output file.', default='out.jpg')
     parser.add_argument('--o_dir', dest='outpath',
                         help='Output directory.',
-                        default='/mnt/d/jlai11/pism-olympics/plot')
+                        default='/mnt/c/Users/jtlai/Work/Research/glacier/plot/')
     parser.add_argument('-v', '--var', dest='var',
                         default=None)
     parser.add_argument('-r', '--region', dest='region',
