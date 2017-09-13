@@ -30,6 +30,10 @@ def main(*args, **kwargs):
     except:
         var = 'topg'
     try:
+        nan_value = kwargs['nan_value']
+    except:
+        nan_value = -99999
+    try:
         region = kwargs['region']
     except:
         #region = '-124.8/-122.6/47/48.4' 
@@ -71,7 +75,7 @@ def main(*args, **kwargs):
 
     # convert nc data to xyz data
     print 'Converting data ...'
-    nc2gmt.main(infile=infile, outfile='tmp.xyz', var=var,
+    nc2gmt.main(infile=infile, outfile='tmp.xyz', var=var, nan_value=nan_value,
                 srs='+init=epsg:26710', interp_flag='True')
 
     with open('tmp.gmt', 'w') as f:
@@ -116,6 +120,8 @@ if __name__=='__main__':
                         default='/mnt/c/Users/jtlai/Work/Research/glacier/plot/')
     parser.add_argument('-v', '--var', dest='var',
                         default=None)
+    parser.add_argument('--nan_value', dest='nan_value',
+                        default=-99999)
     parser.add_argument('-r', '--region', dest='region',
                         default='-124.5/-122.75/47.25/48.25')
     parser.add_argument('--cbartitle', dest='cbartitle',
@@ -130,11 +136,12 @@ if __name__=='__main__':
     outfile = options.outfile
     outpath = options.outpath
     var = options.var
+    nan_value = options.nan_value
     region = options.region
     cbartitle = options.cbartitle
     cbarunit = options.cbarunit
     cbarrange = options.cbarrange
 
     main(infile=infile, outfile=outfile, outpath=outpath, var=var,
-         region=region, cbartitle=cbartitle, cbarunit=cbarunit, 
-         cbarrange=cbarrange)
+         nan_value=nan_value, region=region, cbartitle=cbartitle,
+         cbarunit=cbarunit, cbarrange=cbarrange)

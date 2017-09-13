@@ -44,10 +44,10 @@ def generate_file_names():
             in name_options.items()])])
         file_name =\
         '{domain}_g{grid}m_{experiment}_{start}_{end}a.nc'.format(domain=domain.lower(),
-                                                                  grid = grid,
-                                                                  experiment = experiment,
-                                                                  start = int(start),
-                                                                  end = int(end))
+                                                                  grid=grid,
+                                                                  experiment=experiment,
+                                                                  start=int(start),
+                                                                  end=int(end))
         file_name_list.append(file_name)
         
     return file_name_list

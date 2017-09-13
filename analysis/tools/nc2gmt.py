@@ -77,6 +77,10 @@ def main(*args, **kwargs):
     except:
         sys.exit('Variable name required.\nSee "python nc2gmt.py --help"')
     try:
+        nan_value = kwargs['nan_value']
+    except:
+        nan_value = -99999
+    try:
         srs = kwargs['srs']
     except:
         srs = None
@@ -151,8 +155,8 @@ def main(*args, **kwargs):
 
     lon, lat = proj(ee, nn, inverse=True)
 
-    z_out[np.where(np.isnan(z_out))] = 0.0
-    z_out[np.where(z_out<=0.)] = np.nan
+    z_out[np.where(np.isnan(z_out))] = nan_value
+    z_out[np.where(z_out<=nan_value)] = np.nan
 
     with open(outfile, 'w') as f:
        n, m = z_out.shape
@@ -171,6 +175,8 @@ if __name__=='__main__':
                         help="Output file.", default="out.nc")
     parser.add_argument("-v", "--var", dest="var",
                         help="Name of variable.", default=None)
+    parser.add_argument("--nan_value", dest="nan_value",
+                        default=-99999)
     parser.add_argument("--srs", dest="srs",
                         help='''a valid proj4 string describing describing the projection''',
                         default=None)
@@ -185,9 +191,10 @@ if __name__=='__main__':
     infile = options.infile
     outfile = options.outfile
     var = options.var
+    nan_value = options.nan_value
     srs = options.srs
     interp_flag = str2bool(options.interp_flag)
     interp_factor = options.interp_factor
 
-    main(infile=infile, outfile=outfile, var=var, srs=srs,
+    main(infile=infile, outfile=outfile, var=var, nan_value=nan_value, srs=srs,
          interp_flag=interp_flag, interp_factor=interp_factor)
