@@ -52,6 +52,24 @@ def generate_file_names():
         
     return file_name_list
 
+def get_grid_size(infile):
+    from netCDF4 import Dataset
+
+    indata = Dataset(infile, 'r')
+    try:
+        indata.variables['x']
+    except:
+        sys.exit('Couldn\'t find x dimension')
+    try:
+        indata.variables['y']
+    except:
+        sys.exit('Couldn\'t find y dimension')
+
+    dx = abs(indata.variables['x'][0]-indata.variables['x'][1])
+    dy = abs(indata.variables['y'][0]-indata.variables['y'][1])
+
+    return dx, dy
+
 def calc_erosion(infile=None, outfile=None):
     if infile is None:
         sys.exit('Must provide an input file!')
