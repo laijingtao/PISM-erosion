@@ -64,3 +64,49 @@ def calc_erosion(infile=None, outfile=None):
     #print sub.list2cmdline(cmd)
     sub.call(cmd)
 
+def calc_total_erosion(infile=None, outfile=None):
+    from netCDF4 import Dataset
+
+    if infile is None:
+        sys.exit('Must provide an input file!')
+    overwrite = False
+    if outfile is None:
+        outfile = infile
+        overwrite = True
+
+    indata = Dataset(infile, 'a')
+
+    time = indata.variables['time'][:]
+    grid = abs(indata.variables['x'][0]-indata.variables['x'][1])
+    erosion_1 = indata.variables['erosion_1'][:]
+    erosion_2 = indata.variables['erosion_1'][:]
+    
+    total_erosion_1 = np.array(
+        [erosion_slice.sum() for erosion_slice in erosion_1])*grid*grid
+    total_erosion_2 = np.array(
+        [erosion_slice.sum() for erosion_slice in erosion_2])*grid*grid
+    
+    if not overwrite:
+        outdata = Dataset(outfile, 'w', format='NETCDF4')
+        time_dim = outdata.createDimension('time', None)
+        time_var = outdata.createVariable('time', np.float64, ('time',))
+        time_var[:] = time
+        time_var.units = 'seconds since 1-1-1'
+        time_var.calendar = '365_day'
+        time_var.long_name = 'time'
+        time_var.axis = 'T'
+    else:
+        outdata = indata
+
+    total_erosion_1_var = outdata.createVariable('total_erosion_1', 
+        np.float64, ('time',))
+    total_erosion_1_var[:] = total_erosion_1
+    total_erosion_2_var = outdata.createVariable('total_erosion_2', 
+        np.float64, ('time',))
+    total_erosion_2_var[:] = total_erosion_2
+    
+    indata.close()
+    outdata.close()
+
+    
+
