@@ -70,7 +70,7 @@ def get_grid_size(infile):
 
     return dx, dy
 
-def calc_erosion(infile=None, outfile=None):
+def calc_erosion_nco(infile=None, outfile=None):
     if infile is None:
         sys.exit('Must provide an input file!')
     if outfile is None:
@@ -129,3 +129,17 @@ def calc_total_erosion(infile=None, outfile=None):
     if not overwrite:
         outdata.close()
 
+def calc_total_erosion_nco(infile=None, outfile=None):
+    if infile is None:
+        sys.exit('Must provide an input file!')
+    if outfile is None:
+        outfile = infile
+    dx, dy = get_grid_size(infile)
+    cmd = ['ncap2', '-s',
+           'total_erosion_1=erosion_1.total($x,$y)*'+str(dx)+'*'+str(dx)+\
+           ';total_erosion_2=erosion_2.total($x,$y)*'+str(dx)+'*'+str(dx),
+           '-A', infile, outfile]
+    sub.call(cmd)
+    cmd = ['ncatted', '-a', 'units,total_erosion_1,o,c,"m3 year-1"',
+           '-a', 'units,total_erosion_2,o,c,"m3 year-1"', outfile]
+    sub.call(cmd)
