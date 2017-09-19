@@ -79,7 +79,7 @@ def calc_total_erosion(infile=None, outfile=None):
     time = indata.variables['time'][:]
     grid = abs(indata.variables['x'][0]-indata.variables['x'][1])
     erosion_1 = indata.variables['erosion_1'][:]
-    erosion_2 = indata.variables['erosion_1'][:]
+    erosion_2 = indata.variables['erosion_2'][:]
     
     total_erosion_1 = np.array(
         [erosion_slice.sum() for erosion_slice in erosion_1])*grid*grid
@@ -101,12 +101,13 @@ def calc_total_erosion(infile=None, outfile=None):
     total_erosion_1_var = outdata.createVariable('total_erosion_1', 
         np.float64, ('time',))
     total_erosion_1_var[:] = total_erosion_1
+    total_erosion_1_var.units = 'm3 year-1'
     total_erosion_2_var = outdata.createVariable('total_erosion_2', 
         np.float64, ('time',))
     total_erosion_2_var[:] = total_erosion_2
+    total_erosion_2_var.units = 'm3 year-1'
     
     indata.close()
-    outdata.close()
-
-    
+    if not overwrite:
+        outdata.close()
 
