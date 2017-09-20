@@ -456,14 +456,7 @@ def list_systems():
     
     list = ['debug',
             'chinook',
-            'electra_broadwell',
-            'fish',
-            'keeling',
-            'pacman',
-            'pleiades',
-            'pleiades_haswell',
-            'pleiades_ivy',
-            'pleiades_broadwell']
+            'keeling']
     
     return list
 
@@ -500,22 +493,6 @@ def make_batch_header(system, cores, walltime, queue):
     systems['debug'] = {'mpido' : mpido,
                         'submit': 'echo',
                         'job_id' : 'PBS_JOBID'}
-    mpido = 'mpiexec -n {cores}'.format(cores=cores)
-    systems['fish'] = {'mpido': 'aprun -n {cores}'.format(cores=cores),
-                       'submit' : 'qsub',
-                       'work_dir' : 'PBS_O_WORKDIR',
-                       'job_id' : 'PBS_JOBID',
-                       'queue' : {
-                           'gpu' : 16,
-                           'gpu_long' : 16,
-                           'standard' : 12 }}
-    mpido = 'mpirun -np {cores}'.format(cores=cores)
-    systems['pacman'] = {'mpido' : mpido,
-                         'submit' : 'qsub',
-                         'work_dir' : 'PBS_O_WORKDIR',
-                         'job_id' : 'PBS_JOBID',
-                         'queue' : {
-                             'standard_16' : 16 }}
     mpido = 'mpirun -np {cores} -machinefile ./nodes_$SLURM_JOBID'.format(cores=cores)                         
     systems['chinook'] = {'mpido' : mpido,
                           'submit' : 'sbatch',
@@ -532,42 +509,6 @@ def make_batch_header(system, cores, walltime, queue):
                           'job_id' : 'SLURM_JOBID',
                           'queue' : {
                               'normal' : 12 }}
-    mpido = 'mpiexec -n {cores}'.format(cores=cores)
-    systems['electra_broadwell'] = {'mpido' : mpido,
-                           'submit' : 'qsub',
-                           'work_dir' : 'PBS_O_WORKDIR',
-                           'job_id' : 'PBS_JOBID',
-                           'queue' : {
-                               'long' : 28,
-                               'normal': 28}}
-    systems['pleiades'] = {'mpido' : mpido,
-                           'submit' : 'qsub',
-                           'work_dir' : 'PBS_O_WORKDIR',
-                           'job_id' : 'PBS_JOBID',
-                           'queue' : {
-                               'long' : 20,
-                               'normal': 20}}
-    systems['pleiades_haswell'] = {'mpido' : mpido,
-                           'submit' : 'qsub',
-                           'work_dir' : 'PBS_O_WORKDIR',
-                           'job_id' : 'PBS_JOBID',
-                           'queue' : {
-                               'long' : 24,
-                               'normal': 24}}
-    systems['pleiades_ivy'] = {'mpido' : mpido,
-                           'submit' : 'qsub',
-                           'work_dir' : 'PBS_O_WORKDIR',
-                           'job_id' : 'PBS_JOBID',
-                           'queue' : {
-                               'long' : 20,
-                               'normal': 20}}
-    systems['pleiades_broadwell'] = {'mpido' : mpido,
-                           'submit' : 'qsub',
-                           'work_dir' : 'PBS_O_WORKDIR',
-                           'job_id' : 'PBS_JOBID',
-                           'queue' : {
-                               'long' : 28,
-                               'normal': 28}}
 
     assert system in systems.keys()
     if system not in 'debug':
@@ -604,7 +545,7 @@ cd $SLURM_SUBMIT_DIR
 srun -l /bin/hostname | sort -n | awk \'{{print $2}}\' > ./nodes_$SLURM_JOBID
 
 """.format(queue=queue, walltime=walltime, nodes=nodes, ppn=ppn, cores=cores)
-    elif system in ('keeling'):  ## FIXME
+    elif system in ('keeling'):
         
         header = """#!/bin/bash
 #SBATCH -n {cores}
@@ -620,66 +561,6 @@ module list
 cd $SLURM_SUBMIT_DIR
 
 """.format(walltime=walltime, cores=cores)
-    elif system in ('pleiades'):
-        
-        header = """#PBS -S /bin/bash
-#PBS -N cfd
-#PBS -l walltime={walltime}
-#PBS -m e
-#PBS -q {queue}
-#PBS -lselect={nodes}:ncpus={ppn}:mpiprocs={ppn}:model=ivy
-#PBS -j oe
-
-module list
-
-cd $PBS_O_WORKDIR
-
-""".format(queue=queue, walltime=walltime, nodes=nodes, ppn=ppn, cores=cores)
-    elif system in ('electra_broadwell'):
-        
-        header = """#PBS -S /bin/bash
-#PBS -N cfd
-#PBS -l walltime={walltime}
-#PBS -m e
-#PBS -q {queue}
-#PBS -lselect={nodes}:ncpus={ppn}:mpiprocs={ppn}:model=bro_ele
-#PBS -j oe
-
-module list
-
-cd $PBS_O_WORKDIR
-
-""".format(queue=queue, walltime=walltime, nodes=nodes, ppn=ppn, cores=cores)
-    elif system in ('pleiades_broadwell'):
-        
-        header = """#PBS -S /bin/bash
-#PBS -N cfd
-#PBS -l walltime={walltime}
-#PBS -m e
-#PBS -q {queue}
-#PBS -lselect={nodes}:ncpus={ppn}:mpiprocs={ppn}:model=bro
-#PBS -j oe
-
-module list
-
-cd $PBS_O_WORKDIR
-
-""".format(queue=queue, walltime=walltime, nodes=nodes, ppn=ppn, cores=cores)
-    elif system in ('pleiades_haswell'):
-        
-        header = """#PBS -S /bin/bash
-#PBS -N cfd
-#PBS -l walltime={walltime}
-#PBS -m e
-#PBS -q {queue}
-#PBS -lselect={nodes}:ncpus={ppn}:mpiprocs={ppn}:model=has
-#PBS -j oe
-
-module list
-
-cd $PBS_O_WORKDIR
-
-""".format(queue=queue, walltime=walltime, nodes=nodes, ppn=ppn, cores=cores)
     else:
         header = """#!/bin/bash
 #PBS -q {queue}
