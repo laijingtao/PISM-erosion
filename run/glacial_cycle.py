@@ -246,8 +246,8 @@ for n, combination in enumerate(combinations):
         stress_balance_params_dict = generate_stress_balance(stress_balance, sb_params_dict)
 
         # Setup Climate Forcing
-        climate_file = 
-        atmosphere_paleo_file = 
+        climate_file = 'test.nc' 
+        atmosphere_paleo_file = 'test.nc'
         climate_params_dict = generate_climate(climate,
                 **{'atmosphere_yearly_cycle_file': climate_file,
                    'atmosphere_lapse_rate_file': climate_file,
