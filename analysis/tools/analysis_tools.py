@@ -52,7 +52,25 @@ def generate_file_names():
         
     return file_name_list
 
-def calc_erosion(infile=None, outfile=None):
+def get_grid_size(infile):
+    from netCDF4 import Dataset
+
+    indata = Dataset(infile, 'r')
+    try:
+        indata.variables['x']
+    except:
+        sys.exit('Couldn\'t find x dimension')
+    try:
+        indata.variables['y']
+    except:
+        sys.exit('Couldn\'t find y dimension')
+
+    dx = abs(indata.variables['x'][0]-indata.variables['x'][1])
+    dy = abs(indata.variables['y'][0]-indata.variables['y'][1])
+
+    return dx, dy
+
+def calc_erosion_nco(infile=None, outfile=None):
     if infile is None:
         sys.exit('Must provide an input file!')
     if outfile is None:
@@ -79,7 +97,7 @@ def calc_total_erosion(infile=None, outfile=None):
     time = indata.variables['time'][:]
     grid = abs(indata.variables['x'][0]-indata.variables['x'][1])
     erosion_1 = indata.variables['erosion_1'][:]
-    erosion_2 = indata.variables['erosion_1'][:]
+    erosion_2 = indata.variables['erosion_2'][:]
     
     total_erosion_1 = np.array(
         [erosion_slice.sum() for erosion_slice in erosion_1])*grid*grid
@@ -101,12 +119,27 @@ def calc_total_erosion(infile=None, outfile=None):
     total_erosion_1_var = outdata.createVariable('total_erosion_1', 
         np.float64, ('time',))
     total_erosion_1_var[:] = total_erosion_1
+    total_erosion_1_var.units = 'm3 year-1'
     total_erosion_2_var = outdata.createVariable('total_erosion_2', 
         np.float64, ('time',))
     total_erosion_2_var[:] = total_erosion_2
+    total_erosion_2_var.units = 'm3 year-1'
     
     indata.close()
-    outdata.close()
+    if not overwrite:
+        outdata.close()
 
-    
-
+def calc_total_erosion_nco(infile=None, outfile=None):
+    if infile is None:
+        sys.exit('Must provide an input file!')
+    if outfile is None:
+        outfile = infile
+    dx, dy = get_grid_size(infile)
+    cmd = ['ncap2', '-s',
+           'total_erosion_1=erosion_1.total($x,$y)*'+str(dx)+'*'+str(dx)+\
+           ';total_erosion_2=erosion_2.total($x,$y)*'+str(dx)+'*'+str(dx),
+           '-A', infile, outfile]
+    sub.call(cmd)
+    cmd = ['ncatted', '-a', 'units,total_erosion_1,o,c,"m3 year-1"',
+           '-a', 'units,total_erosion_2,o,c,"m3 year-1"', outfile]
+    sub.call(cmd)
