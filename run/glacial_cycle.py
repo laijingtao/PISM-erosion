@@ -246,9 +246,15 @@ for n, combination in enumerate(combinations):
         stress_balance_params_dict = generate_stress_balance(stress_balance, sb_params_dict)
 
         # Setup Climate Forcing
+        climate_file = 
+        atmosphere_paleo_file = 
         climate_params_dict = generate_climate(climate,
-                                               ice_surface_temp='0,0,-100,5000',
-                                               climatic_mass_balance='{},{},0,{},2500'.format(mb_min, mb_max, ela))
+                **{'atmosphere_yearly_cycle_file': climate_file,
+                   'atmosphere_lapse_rate_file': climate_file,
+                   'atmosphere.precip_exponential_factor_for_temperature': precip_scale_factor,
+                   'temp_lapse_rate': temp_lapse_rate,
+                   'atmosphere_delta_T_file': atmosphere_paleo_file,
+                   'atmosphere_paleo_precip_file': atmosphere_paleo_file})
 
         # Setup Ocean Forcing
         ocean_params_dict = generate_ocean('null')
