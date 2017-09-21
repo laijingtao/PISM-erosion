@@ -12,6 +12,7 @@ except:
     import subprocess as sub
 from collections import OrderedDict
 from argparse import ArgumentParser
+from netCDF4 import Dataset
 #sys.path.append('../../resources/')
 #from resources import *
 
@@ -52,9 +53,55 @@ def generate_file_names():
         
     return file_name_list
 
-def get_grid_size(infile):
-    from netCDF4 import Dataset
+def nc_copy_dim(infile=None, outfile=None):
+    # copy dimensions
+    indata = Dataset(infile, 'r')
+    outdata = Dataset(outfile, 'w')
 
+    for dim_name, dim in indata.dimensions.iteritems():
+        outdata.createDimension(dim_name, len(dim) if not dim.isunlimited() else None)
+        in_dim_var = indata.variables[dim_name]
+        out_dim_var = outdata.createVariable(dim_name, in_dim_var.datatype,
+                                             in_dim_var.dimensions)
+        out_dim_var.setncatts(
+            {k: in_dim_var.getncattr(k) for k in in_dim_var.ncattrs()})
+        out_dim_var[:] = in_dim_var[:]
+    indata.close()
+    outdata.close()
+
+def nc_copy_var(infile=None, outfile=None, var=None):
+    # copy variables
+    if var is None:
+        sys.exit('Must provide at least one variable name!')
+    if type(var) is str:
+        var = [var]
+    indata = Dataset(infile, 'r')
+    outdata = Dataset(outfile, 'a')
+  
+    for var_name in var:
+        if var_name in indata.dimensions.keys():
+            continue
+        in_var = indata.variables[var_name]
+        out_var = outdata.createVariable(var_name, in_var.datatype,
+                                         in_var.dimensions)
+        out_var.setncatts(
+            {k: in_var.getncattr(k) for k in in_var.ncattrs()})
+        out_var[:] = in_var[:]
+    '''
+    # copy all variables
+    for var_name, in_var in indata.variables.iteritems():
+        if var_name in indata.dimensions.keys():
+            continue
+        out_var = outdata.createVariable(var_name, in_var.datatype,
+                                         in_var.dimensions)
+        out_var.setncatts(
+            {k: in_var.getncattr(k) for k in in_var.ncattrs()})
+        out_var[:] = in_var[:]
+    '''
+    indata.close()
+    outdata.close()
+    
+def get_grid_size(infile):
     indata = Dataset(infile, 'r')
     try:
         indata.variables['x']
@@ -83,8 +130,6 @@ def calc_erosion_nco(infile=None, outfile=None):
     sub.call(cmd)
 
 def calc_total_erosion(infile=None, outfile=None):
-    from netCDF4 import Dataset
-
     if infile is None:
         sys.exit('Must provide an input file!')
     overwrite = False
@@ -143,3 +188,6 @@ def calc_total_erosion_nco(infile=None, outfile=None):
     cmd = ['ncatted', '-a', 'units,total_erosion_1,o,c,"m3 year-1"',
            '-a', 'units,total_erosion_2,o,c,"m3 year-1"', outfile]
     sub.call(cmd)
+
+#def calc_average_erosion_space(infile=None, outfile=None):
+
