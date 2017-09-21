@@ -136,8 +136,14 @@ def calc_total_erosion(infile=None, outfile=None):
     if outfile is None:
         outfile = infile
         overwrite = True
+    else:
+        nc_copy_dim(infile, outfile)
 
     indata = Dataset(infile, 'a')
+    if overwrite:
+        outdata = indata
+    else:
+        outdata = Dataset(outfile, 'a')
 
     time = indata.variables['time'][:]
     grid = abs(indata.variables['x'][0]-indata.variables['x'][1])
@@ -148,18 +154,6 @@ def calc_total_erosion(infile=None, outfile=None):
         [erosion_slice.sum() for erosion_slice in erosion_1])*grid*grid
     total_erosion_2 = np.array(
         [erosion_slice.sum() for erosion_slice in erosion_2])*grid*grid
-    
-    if not overwrite:
-        outdata = Dataset(outfile, 'w', format='NETCDF4')
-        time_dim = outdata.createDimension('time', None)
-        time_var = outdata.createVariable('time', np.float64, ('time',))
-        time_var[:] = time
-        time_var.units = 'seconds since 1-1-1'
-        time_var.calendar = '365_day'
-        time_var.long_name = 'time'
-        time_var.axis = 'T'
-    else:
-        outdata = indata
 
     total_erosion_1_var = outdata.createVariable('total_erosion_1', 
         np.float64, ('time',))
@@ -188,6 +182,30 @@ def calc_total_erosion_nco(infile=None, outfile=None):
     cmd = ['ncatted', '-a', 'units,total_erosion_1,o,c,"m3 year-1"',
            '-a', 'units,total_erosion_2,o,c,"m3 year-1"', outfile]
     sub.call(cmd)
+'''
+def calc_average_erosion_space(infile=None, outfile=None):
+    if infile is None:
+        sys.exit('Must provide an input file!')
+    overwrite = False
+    if outfile is None:
+        outfile = infile
+        overwrite = True
+    else:
+        nc_copy_dim(infile, outfile)
 
-#def calc_average_erosion_space(infile=None, outfile=None):
+    indata = Dataset(infile, 'a')
+    if overwrite:
+        outdata = indata
+    else:
+        outdata = Dataset(outfile, 'a')
 
+    time = indata.variables['time'][:]
+    grid = abs(indata.variables['x'][0]-indata.variables['x'][1])
+    col = len(indata.variables['x'])
+    row = len(indata.variables['y'])
+    for erosion_name in ['erosion_1', 'erosion_2']:
+        erosion = indata.variables[erosion_name][:]
+        total_erosion = np.array(
+            [erosion_slice.sum() for erosion_slice in erosion])*grid*grid
+        erosion_space_averaged = total_erosion/(grid*grid*rol*col)
+'''
