@@ -182,8 +182,8 @@ def calc_total_erosion_nco(infile=None, outfile=None):
     cmd = ['ncatted', '-a', 'units,total_erosion_1,o,c,"m3 year-1"',
            '-a', 'units,total_erosion_2,o,c,"m3 year-1"', outfile]
     sub.call(cmd)
-'''
-def calc_average_erosion_space(infile=None, outfile=None):
+
+def calc_erosion_space_averaged(infile=None, outfile=None):
     if infile is None:
         sys.exit('Must provide an input file!')
     overwrite = False
@@ -207,5 +207,12 @@ def calc_average_erosion_space(infile=None, outfile=None):
         erosion = indata.variables[erosion_name][:]
         total_erosion = np.array(
             [erosion_slice.sum() for erosion_slice in erosion])*grid*grid
-        erosion_space_averaged = total_erosion/(grid*grid*rol*col)
-'''
+        erosion_space_averaged = total_erosion/(grid*grid*row*col)
+        erosion_space_averaged_var = outdata.createVariable(
+            'erosion_space_averaged', np.float64, ('time',))
+        erosion_space_averaged_var[:] = erosion_space_averaged
+        erosion_space_averaged_var.units = 'm year-1'
+
+    indata.close()
+    if not overwrite:
+        outdata.close()
