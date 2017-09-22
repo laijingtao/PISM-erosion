@@ -9,7 +9,7 @@ except:
     import subprocess as sub
 from argparse import ArgumentParser
 import numpy as np
-sys.path.append('./tools')
+#sys.path.append('./tools')
 import nc2gmt
 
 def main(*args, **kwargs):
