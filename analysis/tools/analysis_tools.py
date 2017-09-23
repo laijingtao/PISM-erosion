@@ -62,8 +62,14 @@ def nc_copy_dim(infile=None, outfile=None):
         outdata = Dataset(outfile, 'w')
 
     for dim_name, dim in indata.dimensions.iteritems():
-        outdata.createDimension(dim_name, len(dim) if not dim.isunlimited() else None)
-        in_dim_var = indata.variables[dim_name]
+        try:
+            outdata.createDimension(dim_name, len(dim) if not dim.isunlimited() else None)
+        except:
+            continue
+        try:
+            in_dim_var = indata.variables[dim_name]
+        except:
+            continue
         out_dim_var = outdata.createVariable(dim_name, in_dim_var.datatype,
                                              in_dim_var.dimensions)
         out_dim_var.setncatts(
@@ -131,6 +137,46 @@ def calc_erosion_nco(infile=None, outfile=None):
            infile, outfile]
     #print sub.list2cmdline(cmd)
     sub.call(cmd)
+
+def calc_erosion(infile=None, outfile=None):
+    if infile is None:
+        sys.exit('Must provide an input file!')
+    overwrite = False
+    if outfile is None:
+        outfile = infile
+        overwrite = True
+    else:
+        nc_copy_dim(infile, outfile)
+
+    indata = Dataset(infile, 'a')
+    if overwrite:
+        outdata = indata
+    else:
+        outdata = Dataset(outfile, 'a')
+
+    time = indata.variables['time'][:]
+    grid = abs(indata.variables['x'][0]-indata.variables['x'][1])
+    col = len(indata.variables['x'])
+    row = len(indata.variables['y'])
+
+    for erosion_name in ['erosion_1', 'erosion_2']:
+        if erosion_name=='erosion_1':
+            erosion = 1e-4*indata.variables['velbase_mag'][:]
+        if erosion_name=='erosion_2':
+            erosion = 2.7e-7*np.power(indata.variables['velbase_mag'][:], 2.02)
+        try:
+            erosion_var = outdata.createVariable(
+                erosion_name, np.float64, ('time', 'y', 'x',),
+                fill_value=-2000000000.0)
+        except:
+            erosion_var = outdata.variables[erosion_name]
+        erosion_var[:] = erosion
+        erosion_var.units = 'm year-1'
+
+    indata.close()
+    if not overwrite:
+        outdata.close()
+
 
 def calc_total_erosion(infile=None, outfile=None):
     if infile is None:
