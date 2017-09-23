@@ -56,7 +56,10 @@ def generate_file_names():
 def nc_copy_dim(infile=None, outfile=None):
     # copy dimensions
     indata = Dataset(infile, 'r')
-    outdata = Dataset(outfile, 'w')
+    if os.path.isfile(outfile):
+        outdata = Dataset(outfile, 'a')
+    else:
+        outdata = Dataset(outfile, 'w')
 
     for dim_name, dim in indata.dimensions.iteritems():
         outdata.createDimension(dim_name, len(dim) if not dim.isunlimited() else None)
@@ -209,8 +212,11 @@ def calc_erosion_space_averaged(infile=None, outfile=None):
         total_erosion = np.array(
             [erosion_slice.sum() for erosion_slice in erosion])*grid*grid
         erosion_space_averaged = total_erosion/(grid*grid*row*col)
-        erosion_space_averaged_var = outdata.createVariable(
-            erosion_name+'_space_averaged', np.float64, ('time',))
+        try:
+            erosion_space_averaged_var = outdata.createVariable(
+                erosion_name+'_space_averaged', np.float64, ('time',))
+        except:
+            erosion_space_averaged_var = outdata.variables[erosion_name+'_space_averaged']
         erosion_space_averaged_var[:] = erosion_space_averaged
         erosion_space_averaged_var.units = 'm year-1'
 
@@ -234,16 +240,31 @@ def calc_erosion_time_averaged(infile=None, outfile=None):
     else:
         outdata = Dataset(outfile, 'a')
 
-    time = indata.variables['time'][:]
+    time = indata.variables['time'][:]/(365*24*3600.)
 
     for erosion_name in ['erosion_1', 'erosion_2']:
         erosion = indata.variables[erosion_name][:]
         erosion_time_averaged = np.zeros(erosion[0].shape)
-        for erosion_slice in erosion:
-            erosion_time_averaged = erosion_time_averaged+erosion_slice
-        erosion_time_averaged = erosion_time_averaged/len(time)
-        erosion_time_averaged_var = outdata.createVariable(
-            erosion_name+'_time_averaged', np.float64, ('x','y',))
+        for i in range(len(erosion)):
+            tmp_erosion_slice = erosion[i].data
+            tmp_erosion_slice[np.where(
+                    tmp_erosion_slice==indata.variables[erosion_name]._FillValue)] = 0.
+            if i==0:
+                time_step = (time[i+1]-time[i])/2
+            elif i==len(time)-1:
+                time_step = (time[i]-time[i-1])/2
+            else:
+                time_step = (time[i+1]-time[i-1])/2
+            erosion_time_averaged = erosion_time_averaged+tmp_erosion_slice*time_step
+        erosion_time_averaged = erosion_time_averaged/(time[-1]-time[0])
+        erosion_time_averaged[np.where(erosion_time_averaged<=0.)] =\
+            indata.variables[erosion_name]._FillValue
+        try:
+            erosion_time_averaged_var = outdata.createVariable(
+                erosion_name+'_time_averaged', np.float64, ('y','x',),
+                fill_value=indata.variables[erosion_name]._FillValue)
+        except:
+            erosion_time_averaged_var = outdata.variables[erosion_name+'_time_averaged']
         erosion_time_averaged_var[:] = erosion_time_averaged
         erosion_time_averaged_var.units = 'm year-1'
 
