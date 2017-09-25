@@ -317,3 +317,18 @@ def calc_erosion_time_averaged(infile=None, outfile=None):
     indata.close()
     if not overwrite:
         outdata.close()
+
+def dist2lonlat(easting=None, northing=None, *args, **kwargs):
+    # x/y --> lon/lat
+
+    from pyproj import Proj
+
+    try:
+        projection = kwargs['projection']
+    except:
+        projection = 'epsg:26710' 
+
+    proj = Proj(init=projection)
+    ee, nn = np.meshgrid(easting, northing)
+    lon, lat = proj(ee, nn, inverse=True)
+    return lon, lat
