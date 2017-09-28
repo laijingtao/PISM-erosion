@@ -320,6 +320,7 @@ def calc_erosion_time_averaged(infile=None, outfile=None):
 
 def dist2lonlat(easting=None, northing=None, *args, **kwargs):
     # x/y --> lon/lat
+    # default projection is for olympic mountains
 
     from pyproj import Proj
 
