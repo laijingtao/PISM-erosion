@@ -53,6 +53,22 @@ def generate_file_names():
         
     return file_name_list
 
+def dist2lonlat(easting=None, northing=None, *args, **kwargs):
+    # x/y --> lon/lat
+    # default projection is for olympic mountains
+
+    from pyproj import Proj
+
+    try:
+        projection = kwargs['projection']
+    except:
+        projection = 'epsg:26710' 
+
+    proj = Proj(init=projection)
+    ee, nn = np.meshgrid(easting, northing)
+    lon, lat = proj(ee, nn, inverse=True)
+    return lon, lat
+
 def nc_copy_dim(infile=None, outfile=None):
     # copy dimensions
     indata = Dataset(infile, 'r')
@@ -318,18 +334,55 @@ def calc_erosion_time_averaged(infile=None, outfile=None):
     if not overwrite:
         outdata.close()
 
-def dist2lonlat(easting=None, northing=None, *args, **kwargs):
-    # x/y --> lon/lat
-    # default projection is for olympic mountains
+def calc_percent_of_time_covered_by_ice(infile=None, outfile=None):
+    if infile is None:
+        sys.exit('Must provide an input file!')
+    overwrite = False
+    if outfile is None:
+        outfile = infile
+        overwrite = True
+    else:
+        nc_copy_dim(infile, outfile)
 
-    from pyproj import Proj
+    indata = Dataset(infile, 'a')
+    if overwrite:
+        outdata = indata
+    else:
+        outdata = Dataset(outfile, 'a')
+    
+    time = indata.variables['time'][:]/(365*24*3600.)
+   
+    var_list = ['velbase_mag', 'erosion_1', 'erosion_2']
+    flag = True
+    for var in var_list:
+        if var in indata.variables.keys():
+            flag = False
+            break
+    if flag:
+        sys.exit('No usable variable')
+
+    percent = np.zeros(indata.variables[var][:][0].shape)
+    for i in range(len(time)):
+        #print i
+        var_slice = indata.variables[var][:][i]
+        percent[np.where(np.logical_not(var_slice.mask))] += 1.
+    percent = percent/float(len(time))*100.
 
     try:
-        projection = kwargs['projection']
+        fill_value = indata.variables[var]._FillValue
     except:
-        projection = 'epsg:26710' 
+        fill_value = -2.e9
+    percent[np.where(percent<=0.0)] = fill_value
+    try:
+        percent_var = outdata.createVariable('percent_of_time_covered_by_ice',
+                                             np.float64,
+                                             ('y', 'x',),
+                                             fill_value=fill_value)
+    except:
+        percent_var = outdata.variables['percent_of_time_covered_by_ice']
+    percent_var[:] = percent
 
-    proj = Proj(init=projection)
-    ee, nn = np.meshgrid(easting, northing)
-    lon, lat = proj(ee, nn, inverse=True)
-    return lon, lat
+    indata.close()
+    if not overwrite:
+        outdata.close()
+
