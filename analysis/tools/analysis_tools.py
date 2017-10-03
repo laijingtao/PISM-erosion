@@ -309,8 +309,7 @@ def calc_erosion_time_averaged(infile=None, outfile=None):
         erosion_time_averaged = np.zeros(erosion[0].shape)
         for i in range(len(erosion)):
             tmp_erosion_slice = erosion[i].data
-            tmp_erosion_slice[np.where(
-                    tmp_erosion_slice==indata.variables[erosion_name]._FillValue)] = 0.
+            tmp_erosion_slice[np.where(erosion[i].mask)] = 0.
             if i==0:
                 time_step = (time[i+1]-time[i])/2
             elif i==len(time)-1:
