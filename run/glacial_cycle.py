@@ -177,7 +177,8 @@ for n, combination in enumerate(combinations):
 
     name_options = OrderedDict()
     name_options['sb'] = stress_balance
-    experiment =  '_'.join([climate, '_'.join(['_'.join([k, str(v)]) for k, v in name_options.items()])])
+    experiment =  '_'.join(
+            [climate, '_'.join(['_'.join([k, str(v)]) for k, v in name_options.items()])])
 
     script = 'cc_{}_g{}m_{}.sh'.format(domain.lower(), grid, experiment)
     scripts.append(script)
@@ -246,15 +247,16 @@ for n, combination in enumerate(combinations):
         stress_balance_params_dict = generate_stress_balance(stress_balance, sb_params_dict)
 
         # Setup Climate Forcing
-        climate_file = 'test.nc' 
-        atmosphere_paleo_file = 'test.nc'
-        climate_params_dict = generate_climate(climate,
-                **{'atmosphere_yearly_cycle_file': climate_file,
-                   'atmosphere_lapse_rate_file': climate_file,
-                   'atmosphere.precip_exponential_factor_for_temperature': precip_scale_factor,
-                   'temp_lapse_rate': temp_lapse_rate,
-                   'atmosphere_delta_T_file': atmosphere_paleo_file,
-                   'atmosphere_paleo_precip_file': atmosphere_paleo_file})
+        climate_file = 'test_climate.nc' 
+        atmosphere_paleo_file = 'test_climate.nc'
+        climate_params_dict = generate_climate(
+            climate,
+            **{'atmosphere_yearly_cycle_file': climate_file,
+               'atmosphere_lapse_rate_file': climate_file,
+               'atmosphere.precip_exponential_factor_for_temperature': precip_scale_factor,
+               'temp_lapse_rate': temp_lapse_rate,
+               'atmosphere_delta_T_file': atmosphere_paleo_file,
+               'atmosphere_paleo_precip_file': atmosphere_paleo_file})
 
         # Setup Ocean Forcing
         ocean_params_dict = generate_ocean('null')
@@ -264,7 +266,6 @@ for n, combination in enumerate(combinations):
 
         # Setup Carving Model
         calving_params_dict = generate_calving('float_kill')
-
 
         # Setup Scalar and Spatial Time Series Reporting
         exvars = default_spatial_ts_vars()
@@ -285,10 +286,12 @@ for n, combination in enumerate(combinations):
 
         if system in ('debug'):
             cmd = ' '.join([batch_system['mpido'], prefix, all_params, 
-                           '2>&1 | tee {outdir}/job.${batch}'.format(outdir=odir, batch=batch_system['job_id'])])
+                           '2>&1 | tee {outdir}/job.${batch}'.format(outdir=odir, 
+                                                                     batch=batch_system['job_id'])])
         else:
             cmd = ' '.join([batch_system['mpido'], prefix, all_params, 
-                           '> {outdir}/job.${batch}  2>&1'.format(outdir=odir, batch=batch_system['job_id'])])
+                           '> {outdir}/job.${batch}  2>&1'.format(outdir=odir, 
+                                                                  batch=batch_system['job_id'])])
 
         f.write(cmd)
         f.write('\n')
