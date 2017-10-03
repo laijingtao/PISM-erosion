@@ -364,7 +364,8 @@ def calc_percent_of_time_covered_by_ice(infile=None, outfile=None):
     for i in range(len(time)):
         #print i
         var_slice = indata.variables[var][:][i]
-        percent[np.where(np.logical_not(var_slice.mask))] += 1.
+        #percent[np.where(np.logical_not(var_slice.mask))] += 1.
+        percent[np.where(var_slice.data>0.)] += 1.
     percent = percent/float(len(time))*100.
 
     try:
