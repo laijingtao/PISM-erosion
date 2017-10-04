@@ -17,7 +17,7 @@ from resources import *
 
 # set up the option parser
 parser = ArgumentParser()
-parser.description = "Generating scripts for prognostic simulations."
+parser.description = "Generating scripts for simulations."
 parser.add_argument("-n", '--n_procs', dest="n", type=int,
                     help='''number of cores/processors. default=2.''', default=2)
 parser.add_argument("-w", '--wall_time', dest="walltime",
@@ -28,7 +28,7 @@ parser.add_argument("--climate", dest="climate",
                     choices=['elev', 'paleo', 'present'],
                     help="Climate", default='paleo')
 parser.add_argument("-d", "--domain", dest="domain",
-                    choices=['olympics', 'olympics_mtns'],
+                    choices=['olympics', 'olympics_mtns', 'synthetic'],
                     help="sets the modeling domain", default='olympics')
 parser.add_argument("--start_year", dest="start", type=float,
                     help="Start year", default=0)
@@ -163,7 +163,7 @@ tsstep = 'yearly'
 scripts = []
 scripts_post = []
 batch_scripts_dir = './'
-if system in ['keeling']:
+if system in ['debug', 'keeling']:
     batch_scripts_dir = './batch_scripts/'
 if not os.path.isdir(batch_scripts_dir):
     os.mkdir(batch_scripts_dir)
