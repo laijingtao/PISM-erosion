@@ -10,9 +10,8 @@ ymax=5381000
 version=1
 
 #cd $PISM_DATA_DIR
-cd $HOME/glacier/data
 
-infile=geotiff_olympics/Olympics_30m.tif
+infile=/home/jtlai/data/glacier/geotiff_olympics/Olympics_30m.tif
 
 for GRID  in 50 100 200 250 500 1000; do
     outfile=pism_Olympics_${GRID}m_v${version}.nc
@@ -26,7 +25,7 @@ for GRID  in 50 100 200 250 500 1000; do
 done
 
 rm tmp_*
-#exit
+exit
 
 # cut extra part
 # Domain size
@@ -46,4 +45,4 @@ for GRID  in 50 100 200 250 500 1000; do
     ncatted -a standard_name,topg,o,c,"bedrock_altitude" -a units,topg,o,c,"m" $outfile
 done
 
-
+rm tmp_*
