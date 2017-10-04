@@ -13,6 +13,6 @@ for GRID  in 50 100 200 250 500 1000; do
     done
 done
 
-ncgen -o paleo_modifier.nc paleo_modifier.cdl
+#ncgen -o paleo_modifier.nc paleo_modifier.cdl
 
 rm tmp*
