@@ -95,7 +95,7 @@ pism_dataname = 'pism_{domain}_{grid}m_v{version}.nc'.format(domain=domain.capit
                                                              grid=grid,
                                                              version=bed_version)
 if system in ['keeling']:
-    pism_dataname = pism_data_dir+pism_dataname
+    pism_dataname = pism_data_dir+'/bed_dem/'+pism_dataname
 state_dir = 'state'
 scalar_dir = 'scalar'
 spatial_dir = 'spatial'

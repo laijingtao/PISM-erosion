@@ -72,6 +72,8 @@ system = options.system
 
 if system in ['keeling']:
     pism_data_dir = os.environ['PISM_DATA_DIR']
+else:
+    pism_data_dir = './'
 
 bed_version = options.bed_version
 climate = options.climate
@@ -91,14 +93,12 @@ if input_file is None:
 pism_dataname = 'pism_{domain}_{grid}m_v{version}.nc'.format(domain=domain.capitalize(),
                                                              grid=grid,
                                                              version=bed_version)
-if system in ['keeling']:
-    pism_dataname = pism_data_dir+pism_dataname
+pism_dataname = pism_data_dir+'/bed_dem/'+pism_dataname
 perf_dir = 'performance'
 state_dir = 'state'
 scalar_dir = 'scalar'
 spatial_dir = 'spatial'
-if system in ['keeling']:
-    odir = pism_data_dir+odir
+odir = pism_data_dir+odir
 if not os.path.isdir(odir):
     os.mkdir(odir)
 for tsdir in (perf_dir, scalar_dir, spatial_dir, state_dir):
@@ -111,8 +111,7 @@ if not os.path.isdir(odir_tmp):
 # Configuration File Setup
 pism_config = 'olympics_config'
 pism_config_nc = '.'.join([pism_config, 'nc'])
-if system in ['keeling']:
-    pism_config_nc = pism_data_dir+pism_config_nc
+pism_config_nc = pism_data_dir+pism_config_nc
 pism_config_cdl = os.path.join('../config', '.'.join([pism_config, 'cdl']))
 # Anaconda libssl problem
 if system in ['keeling', 'debug']:
@@ -122,7 +121,6 @@ else:
 cmd = [ncgen, '-o',
        pism_config_nc, pism_config_cdl]
 sub.call(cmd)
-
 
 hydrology = 'diffuse'
 
