@@ -4,12 +4,21 @@
 import numpy as np
 from netCDF4 import Dataset
 
-infile = '../bed_dem/pism_Olympics_1000m_v1.nc'
+infile = '../bed_dem/pism_synthetic_1000m_v1.nc'
 outfile = 'constant_climate.nc'
 
 # dimensions of Olympic
 x_dim = 200
 y_dim = 180
+dim_value = {'x': np.arange(x_dim),
+             'y': np.arange(y_dim)}
+if not(infile is None):
+    indata = Dataset(infile, 'r')
+    x_dim, = indata.variables['x'].shape
+    y_dim, = indata.variables['y'].shape
+    dim_value['x'] = indata.variables['x'][:]
+    dim_value['y'] = indata.variables['y'][:]
+    indata.close()
 
 air_temp_mean_annual = 9.5
 air_temp_mean_july = 15.5
@@ -23,7 +32,7 @@ for dim_name in ['x', 'y', 'time']:
         outdata.createDimension(dim_name, dim_len[dim_name])
         outdata.createVariable(dim_name, np.float64, (dim_name,))
         if not(dim_len[dim_name] is None):
-            outdata.variables[dim_name][:] = np.arange(dim_len[dim_name])
+            outdata.variables[dim_name][:] = dim_value[dim_name]
     except:
         continue
 
