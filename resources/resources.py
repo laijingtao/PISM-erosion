@@ -198,6 +198,8 @@ def generate_grid_description(grid_resolution, accepted_resolutions, domain, res
         mx_max = 2400
         my_max = 2000
     elif domain.lower() in ['synthetic']:
+        # mx_max = 40km/50m
+        # my_max = 20km/50m
         mx_max = 800
         my_max = 400
     else:
@@ -582,19 +584,7 @@ cd $PBS_O_WORKDIR
 
 def make_batch_post_header(system):
 
-    if system in ('electra_broadwell', 'pleiades', 'pleiades_ivy', 'pleiades_broadwell', 'pleiades_haswell'):
-
-        header = """#PBS -S /bin/bash
-#PBS -lselect=1:mem=94GB
-#PBS -lwalltime=8:00:00
-#PBS -q ldan
-
-module list
-
-cd $PBS_O_WORKDIR
-
-"""
-    elif system in ('chinook'):
+    if system in ('chinook'):
         header = """#!/bin/bash
 #PBS -q t2small
 #PBS -l walltime=12:00:00
