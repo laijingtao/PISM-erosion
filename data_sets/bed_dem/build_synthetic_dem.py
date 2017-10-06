@@ -68,6 +68,7 @@ def write_dem(mg, outfile):
 
     topg_var = outdata.createVariable('topg', np.float64, ('y', 'x',))
     topg_var[:] = mg.at_node['topographic__elevation'][mg.core_nodes]
+    topg_var.units = 'm'
 
     outdata.close()
 
