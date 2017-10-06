@@ -69,6 +69,16 @@ def dist2lonlat(easting=None, northing=None, *args, **kwargs):
     lon, lat = proj(ee, nn, inverse=True)
     return lon, lat
 
+def nc_reorder_xy_nco(infile=None, outfile=None):
+    # In pism 0.7, the dimension order is (x, y)
+    # This function will change it to (y, x)
+    if infile is None:
+        sys.exit('Must provide an input!')
+    if outfile is None:
+        outfile = infile
+    cmd = ['ncpdq', '-a', 'y,x', '-O', infile, outfile]
+    sub.call(cmd)
+
 def nc_copy_dim(infile=None, outfile=None):
     # copy dimensions
     indata = Dataset(infile, 'r')
