@@ -47,7 +47,7 @@ def generate_domain(domain):
     Returns: string
     '''
     
-    if domain.lower() in ('olympics', 'olympics_mtns'):
+    if domain.lower() in ('olympics', 'olympics_mtns', 'synthetic'):
         pism_exec = 'pismr'
     else:
         print('Domain {} not recognized, exiting'.format(domain))
@@ -197,6 +197,9 @@ def generate_grid_description(grid_resolution, accepted_resolutions, domain, res
     elif domain.lower() in ('olympics_mtns'):
         mx_max = 2400
         my_max = 2000
+    elif domain.lower() in ['synthetic']:
+        mx_max = 800
+        my_max = 400
     else:
         print('domain {} not recongnized'.format(domain))
     resolution_max = 50
