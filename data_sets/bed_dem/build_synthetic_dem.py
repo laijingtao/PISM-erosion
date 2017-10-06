@@ -16,8 +16,8 @@ def build_dem(grid=1000.):
     z_max = 0.
     dx = grid
     
-    uplift_rate = 0.005
-    runtime = 3000000.
+    uplift_rate = 0.007
+    runtime = 2000000.
     dt = 500.
     nt = int(runtime/dt)
     K = 1e-5
@@ -28,7 +28,7 @@ def build_dem(grid=1000.):
     mg = RasterModelGrid(nrows+2, ncols+2, dx)
     mg.add_zeros('node', 'topographic__elevation', units='m')
     z = mg.at_node['topographic__elevation']
-    z += np.random.rand(len(z))/0.005
+    z += np.random.rand(len(z))/0.1
     z += (np.max(mg.node_x)-mg.node_x)/x_max*z_max
    
     mg.set_closed_boundaries_at_grid_edges(False, True, True, True)
@@ -68,6 +68,7 @@ def write_dem(mg, outfile):
 
     topg_var = outdata.createVariable('topg', np.float64, ('y', 'x',))
     topg_var[:] = mg.at_node['topographic__elevation'][mg.core_nodes]
+    topg_var[:] -= topg_var[:].min()
     topg_var.units = 'm'
 
     outdata.close()
