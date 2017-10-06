@@ -316,6 +316,11 @@ for n, combination in enumerate(combinations):
         cmd = ' '.join(['ncks -O -4', os.path.join(odir, state_dir, outfile),
                         os.path.join(odir, state_dir, outfile), '\n'])
         f.write(cmd)
+        # pism0.7 has x,y dimensions, we want y,x
+        cmd = ' '.join(['ncpdq', '-a', 'y,x', '-O', myoutfile, myoutfile, '\n'])
+        f.write(cmd)
+        cmd = ' '.join(['ncpdq', '-a', 'y,x', '-O', outfile, outfile, '\n'])
+        f.write(cmd)
 
 
 scripts = uniquify_list(scripts)
