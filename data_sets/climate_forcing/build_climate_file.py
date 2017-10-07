@@ -23,6 +23,7 @@ if not(infile is None):
 air_temp_mean_annual = 9.5
 air_temp_mean_july = 15.5
 precipitation = 1500.0
+usurf = 0.0
 
 outdata = Dataset(outfile, 'w')
 
@@ -38,13 +39,16 @@ for dim_name in ['x', 'y', 'time']:
 
 var_name_list = ['air_temp_mean_annual',
                  'air_temp_mean_july',
-                 'precipitation']
+                 'precipitation',
+                 'usurf']
 var_value = {'air_temp_mean_annual': air_temp_mean_annual,
              'air_temp_mean_july': air_temp_mean_july,
-             'precipitation': precipitation}
+             'precipitation': precipitation,
+             'usurf': usurf}
 var_unit = {'air_temp_mean_annual': 'celsius',
              'air_temp_mean_july': 'celsius',
-             'precipitation': 'mm yr-1'}
+             'precipitation': 'mm yr-1',
+             'usurf': 'm'}
 for var_name in var_name_list:
     try:
         var = outdata.variables[var_name]
