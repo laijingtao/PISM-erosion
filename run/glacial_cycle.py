@@ -112,6 +112,14 @@ odir_tmp = '_'.join([odir, 'tmp'])
 if not os.path.isdir(odir_tmp):
     os.mkdir(odir_tmp)
 
+# copy climate file
+climate_file = pism_work_dir+'/data_sets/climate_forcing/constant_climate.nc' 
+atmosphere_paleo_file = pism_work_dir+'/data_sets/climate_forcing/pism_scaled_dT.nc'
+cmd = ['cp', climate_file, odir+'/climate.nc']
+sub.call(cmd)
+cmd = ['cp', atmosphere_paleo_file, odir+'/pism_scaled_dT.nc']
+sub.call(cmd)
+
 # Configuration File Setup
 pism_config = 'olympics_config'
 pism_config_nc = '.'.join([pism_config, 'nc'])
@@ -249,8 +257,6 @@ for n, combination in enumerate(combinations):
         stress_balance_params_dict = generate_stress_balance(stress_balance, sb_params_dict)
 
         # Setup Climate Forcing
-        climate_file = pism_work_dir+'/data_sets/climate_forcing/constant_climate.nc' 
-        atmosphere_paleo_file = pism_work_dir+'/data_sets/climate_forcing/pism_scaled_dT.nc'
         climate_params_dict = generate_climate(
             climate,
             **{'atmosphere_yearly_cycle_file': climate_file,
