@@ -343,7 +343,7 @@ print('\nwritten\n')
 if system in ['keeling']:
     with open('submit_batch.sh', 'w') as f:
         f.write('#!/bin/bash\n\n')
-        f.write('cd ./batch_scripts\n')
+        f.write('cd '+batch_scripts_dir+'\n')
         for script in scripts:
             f.write('sbatch {}\n'.format(script))
     sub.call(['chmod', 'u+x', 'submit_batch.sh'])
