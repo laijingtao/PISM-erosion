@@ -138,16 +138,16 @@ ssa_n = (3.0)
 ssa_e = (1.0)
 
 # Model Parameters for Sensitivity Study
-ela_values = [2000]
+ela_values = [2200, 2000, 1800]
 mb_min_values = [-3.]
-mb_max_values = [-3.]
+mb_max_values = [3.]
 sia_e_values = [3.0]
 ppq_values = [0.50]
 tefo_values = [0.020]
 phi_min_values = [15]
 phi_max_values = [45]
 topg_min_values = [0]
-topg_max_values = [200]
+topg_max_values = [3000]
 temp_lapse_rate_values = [5.0, 6.0]
 combinations = list(itertools.product(ela_values,
                                       mb_min_values,
@@ -180,9 +180,7 @@ for n, combination in enumerate(combinations):
     name_options['sb'] = stress_balance
     name_options['ela'] = ela
     name_options['mb_min'] = mb_min
-    #name_options['mb_max'] = mb_max
-    #paried max/min -JL
-    name_options['mb_max'] = -mb_min
+    name_options['mb_max'] = mb_max
     experiment =  '_'.join([climate, '_'.join(['_'.join([k, str(v)]) for k, v in name_options.items()])])
 
     script = 'cc_{}_g{}m_{}.sh'.format(domain.lower(), grid, experiment)

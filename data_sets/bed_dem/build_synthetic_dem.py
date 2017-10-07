@@ -16,7 +16,7 @@ def build_dem(grid=1000.):
     z_max = 0.
     dx = grid
     
-    uplift_rate = 0.007
+    uplift_rate = 0.004
     runtime = 2000000.
     dt = 500.
     nt = int(runtime/dt)
