@@ -72,7 +72,7 @@ system = options.system
 
 if system in ['keeling']:
     pism_data_dir = os.environ['PISM_DATA_DIR']
-    pism_work_dir = '/data/keeling/a/jlai11/glacier/pism-erosion'
+    pism_work_dir = '/data/keeling/a/jlai11/glacier/pism-erosion/'
 else:
     pism_data_dir = './'
     pism_work_dir = './'
@@ -102,7 +102,7 @@ perf_dir = 'performance'
 state_dir = 'state'
 scalar_dir = 'scalar'
 spatial_dir = 'spatial'
-odir = pism_data_dir+odir
+odir = pism_data_dir+'/'+odir
 if not os.path.isdir(odir):
     os.mkdir(odir)
 for tsdir in (perf_dir, scalar_dir, spatial_dir, state_dir):
