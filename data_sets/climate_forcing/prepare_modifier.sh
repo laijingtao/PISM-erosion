@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x -e
 
 ncap2 -O -s "delta_T=0.4*delta_T;" pism_dT.nc pism_scaled_dT.nc
 
