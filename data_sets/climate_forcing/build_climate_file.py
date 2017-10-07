@@ -4,7 +4,7 @@
 import numpy as np
 from netCDF4 import Dataset
 
-infile = '../bed_dem/pism_synthetic_1000m_v1.nc'
+infile = '../bed_dem/pism_Synthetic_v1.nc'
 outfile = 'constant_climate.nc'
 
 # dimensions of Olympic
@@ -22,7 +22,7 @@ if not(infile is None):
 
 air_temp_mean_annual = 9.5
 air_temp_mean_july = 15.5
-precipitation = 2000.0
+precipitation = 1500.0
 
 outdata = Dataset(outfile, 'w')
 
@@ -44,7 +44,7 @@ var_value = {'air_temp_mean_annual': air_temp_mean_annual,
              'precipitation': precipitation}
 var_unit = {'air_temp_mean_annual': 'celsius',
              'air_temp_mean_july': 'celsius',
-             'precipitation': 'kg m-2 yr-1'}
+             'precipitation': 'mm yr-1'}
 for var_name in var_name_list:
     try:
         var = outdata.variables[var_name]

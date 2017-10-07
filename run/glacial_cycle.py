@@ -72,8 +72,10 @@ system = options.system
 
 if system in ['keeling']:
     pism_data_dir = os.environ['PISM_DATA_DIR']
+    pism_work_dir = '/data/keeling/a/jlai11/glacier/pism-erosion'
 else:
     pism_data_dir = './'
+    pism_work_dir = './'
 
 bed_version = options.bed_version
 climate = options.climate
@@ -81,8 +83,10 @@ duration = options.duration
 grid = options.grid
 stress_balance = options.stress_balance
 
-start = options.start
-end  = start + options.duration
+#start = options.start
+#end  = start + options.duration
+start = -125000
+end = 0
 exstep = options.exstep
 domain = options.domain
 pism_exec = generate_domain(domain)
@@ -245,8 +249,8 @@ for n, combination in enumerate(combinations):
         stress_balance_params_dict = generate_stress_balance(stress_balance, sb_params_dict)
 
         # Setup Climate Forcing
-        climate_file = 'test_climate.nc' 
-        atmosphere_paleo_file = 'test_climate.nc'
+        climate_file = pism_work_dir+'/data_sets/climate_forcing/constant_climate.nc' 
+        atmosphere_paleo_file = pism_work_dir+'/data_sets/climate_forcing/pism_scaled_dT.nc'
         climate_params_dict = generate_climate(
             climate,
             **{'atmosphere_yearly_cycle_file': climate_file,
