@@ -135,6 +135,22 @@ def nc_copy_var(infile=None, outfile=None, var=None):
     '''
     indata.close()
     outdata.close()
+
+'''
+def nc_regrid(infile=None, outfile=None, grid=None):
+    if infile is None:
+        sys.exit('Error: must provide an infile')
+    if outfile is None:
+        sys.exit('Error: must provide an outfile')
+    if grid is None:
+        sys.exit('Error: must provide a new grid resolution')
+
+    indata = Dataset(infile, 'r')
+    outdata = Dataset(outfile, 'w')
+
+    dim_list = indata.dimensions.keys()
+    var_list = indata.variables.keys() 
+'''
     
 def get_grid_size(infile):
     indata = Dataset(infile, 'r')
