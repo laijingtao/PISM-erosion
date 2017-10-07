@@ -30,6 +30,10 @@ def build_dem(grid=1000.):
     z = mg.at_node['topographic__elevation']
     z += np.random.rand(len(z))/0.1
     z += (np.max(mg.node_x)-mg.node_x)/x_max*z_max
+    
+    land = mg.core_nodes[np.where(mg.node_x[mg.core_nodes]<=35000)]
+    ocean = mg.core_nodes[np.where(mg.node_x[mg.core_nodes]>35000)]
+    z[ocean] = 0.0
    
     mg.set_closed_boundaries_at_grid_edges(False, True, True, True)
 
@@ -38,7 +42,8 @@ def build_dem(grid=1000.):
     lin_diffuse = LinearDiffuser(mg, linear_diffusivity=D)
 
     for i in range(nt):
-        mg.at_node['topographic__elevation'][mg.core_nodes] += uplift_rate*dt
+        #mg.at_node['topographic__elevation'][mg.core_nodes] += uplift_rate*dt
+        mg.at_node['topographic__elevation'][land] += uplift_rate*dt
         # ramp
         mg.at_node['topographic__elevation'] += \
                 0.0*np.sqrt((float(mg.node_x.max())-mg.node_x)/x_max)*uplift_rate*dt
