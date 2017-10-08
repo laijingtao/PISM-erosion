@@ -114,10 +114,10 @@ if not os.path.isdir(odir_tmp):
 
 # copy climate file
 climate_file = pism_work_dir+'/data_sets/climate_forcing/constant_climate.nc' 
-atmosphere_paleo_file = pism_work_dir+'/data_sets/climate_forcing/pism_scaled_dT.nc'
-cmd = ['cp', climate_file, odir+'/climate.nc']
+atmosphere_paleo_file = pism_work_dir+'/data_sets/climate_forcing/paleo_modifier_-4K.nc'
+cmd = ['cp', climate_file, odir+'/climate_file.nc']
 sub.call(cmd)
-cmd = ['cp', atmosphere_paleo_file, odir+'/pism_scaled_dT.nc']
+cmd = ['cp', atmosphere_paleo_file, odir+'/atmosphere_paleo_file.nc']
 sub.call(cmd)
 
 # Configuration File Setup
@@ -174,7 +174,7 @@ scripts = []
 scripts_post = []
 batch_scripts_dir = './'
 if system in ['debug', 'keeling']:
-    batch_scripts_dir = './batch_scripts/'
+    batch_scripts_dir = './batch_scripts3/'
 if not os.path.isdir(batch_scripts_dir):
     os.mkdir(batch_scripts_dir)
 
