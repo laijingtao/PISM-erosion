@@ -2,7 +2,6 @@
 # Copyright (C) 2017 Jingtao Lai
 
 import numpy as np
-import matplotlib.pyplot as plt
 import os
 import sys
 import itertools
