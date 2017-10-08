@@ -59,6 +59,10 @@ parser.add_argument("--bed_version", dest="bed_version",
 parser.add_argument("--stress_balance", dest="stress_balance",
                     choices=['sia', 'ssa+sia', 'ssa'],
                     help="stress balance solver", default='sia')
+parser.add_argument("-p", "--params", dest="params_list",
+                    help="Comma-separated list with params for sensitivity", default=None)
+parser.add_argument("--batch_scripts_dir", dest="batch_scripts_dir",
+                    help="directory to save batch scripts", default='./batch_scripts/')
 
 options = parser.parse_args()
 
@@ -75,7 +79,7 @@ if system in ['keeling']:
     pism_work_dir = '/data/keeling/a/jlai11/glacier/pism-erosion/'
 else:
     pism_data_dir = './'
-    pism_work_dir = './'
+    pism_work_dir = '/home/jtlai/research/glacier/pism-erosion/'
 
 bed_version = options.bed_version
 climate = options.climate
@@ -111,14 +115,9 @@ for tsdir in (perf_dir, scalar_dir, spatial_dir, state_dir):
 odir_tmp = '_'.join([odir, 'tmp'])
 if not os.path.isdir(odir_tmp):
     os.mkdir(odir_tmp)
-
-# copy climate file
-climate_file = pism_work_dir+'/data_sets/climate_forcing/constant_climate.nc' 
-atmosphere_paleo_file = pism_work_dir+'/data_sets/climate_forcing/paleo_modifier_-4K.nc'
-cmd = ['cp', climate_file, odir+'/climate_file.nc']
-sub.call(cmd)
-cmd = ['cp', atmosphere_paleo_file, odir+'/atmosphere_paleo_file.nc']
-sub.call(cmd)
+batch_scripts_dir = options.batch_scripts_dir
+if not os.path.isdir(batch_scripts_dir):
+    os.mkdir(batch_scripts_dir)
 
 # Configuration File Setup
 pism_config = 'olympics_config'
@@ -134,6 +133,17 @@ cmd = [ncgen, '-o', pism_config_nc, pism_config_cdl]
 sub.call(cmd)
 
 hydrology = 'diffuse'
+
+# Check if perform sensitivity study
+params_list = options.params_list
+do_delta_T = False
+do_frac_P = False
+if params_list is not None:
+    params = params_list.split(',')
+    if 'delta_T' in params:
+        do_delta_T = True
+    if 'frac_P' in params:
+        do_frac_P = True
 
 # ########################################################
 # set up model initialization
@@ -157,6 +167,14 @@ phi_max_values = [30]
 topg_min_values = [-500]
 topg_max_values = [4000]
 temp_lapse_rate_values = [6.0]
+if do_delta_T:
+    delta_T_values = [-4., -5., -6., -7.]
+else:
+    delta_T_values = [0.0]
+if do_frac_P:
+    frac_P_values = [0.5, 1.0, 1.5]
+else:
+    frac_P_values = [1.0]
 combinations = list(itertools.product(precip_scale_factor_values,
                                       sia_e_values,
                                       ppq_values,
@@ -165,27 +183,26 @@ combinations = list(itertools.product(precip_scale_factor_values,
                                       phi_max_values,
                                       topg_min_values,
                                       topg_max_values,
-                                      temp_lapse_rate_values))
+                                      temp_lapse_rate_values,
+                                      delta_T_values,
+                                      frac_P_values))
 
 tsstep = 'yearly'
 
 scripts = []
 scripts_post = []
-batch_scripts_dir = './'
-if system in ['debug', 'keeling']:
-    batch_scripts_dir = './batch_scripts3/'
-if not os.path.isdir(batch_scripts_dir):
-    os.mkdir(batch_scripts_dir)
 
 for n, combination in enumerate(combinations):
 
-    precip_scale_factor, sia_e, ppq, tefo, phi_min, phi_max, topg_min, topg_max, temp_lapse_rate = combination
+    precip_scale_factor, sia_e, ppq, tefo, phi_min, phi_max, topg_min, topg_max, temp_lapse_rate, delta_T, frac_P = combination
 
     phi_max = phi_min
     ttphi = '{},{},{},{}'.format(phi_min, phi_max, topg_min, topg_max)
 
     name_options = OrderedDict()
     name_options['sb'] = stress_balance
+    name_options['delta_T'] = delta_T
+    name_options['frac_P'] = frac_P
     experiment =  '_'.join(
             [climate, '_'.join(['_'.join([k, str(v)]) for k, v in name_options.items()])])
 
@@ -202,7 +219,7 @@ for n, combination in enumerate(combinations):
 
     batch_header, batch_system = make_batch_header(system, nn, walltime, queue)
 
-    with open(batch_scripts_dir+script, 'w') as f:
+    with open(os.path.join(batch_scripts_dir, script), 'w') as f:
 
         f.write(batch_header)
         
@@ -256,6 +273,25 @@ for n, combination in enumerate(combinations):
         stress_balance_params_dict = generate_stress_balance(stress_balance, sb_params_dict)
 
         # Setup Climate Forcing
+        climate_file = os.path.join(
+                pism_work_dir, 'data_sets/climate_forcing/constant_climate.nc')
+        if do_delta_T:
+            atmosphere_paleo_file = os.path.join(
+                    pism_work_dir,
+                    'data_sets/climate_forcing/paleo_modifier_T_{}.nc'.format(delta_T))
+        elif do_frac_P:
+            atmosphere_paleo_file = os.path.join(
+                    pism_work_dir,
+                    'data_sets/climate_forcing/paleo_modifier_P_{}.nc'.format(frac_P))
+        else:
+            atmosphere_paleo_file = os.path.join(
+                    pism_work_dir, 'data_sets/climate_forcing/paleo_modifier.nc')
+        cmd = ['cp', climate_file, 
+                os.path.join(odir, 'climate_file_{}.nc'.format(experiment))]
+        sub.call(cmd)
+        cmd = ['cp', atmosphere_paleo_file, 
+                os.path.join(odir, 'atmosphere_paleo_file_{}.nc'.format(experiment))]
+        sub.call(cmd)
         climate_params_dict = generate_climate(
             climate,
             **{'atmosphere_yearly_cycle_file': climate_file,
@@ -310,7 +346,7 @@ for n, combination in enumerate(combinations):
 
     post_header = make_batch_post_header(system)
 
-    with open(batch_scripts_dir+script_post, 'w') as f:
+    with open(os.path.join(batch_scripts_dir, script_post), 'w') as f:
 
         f.write(post_header)
 
