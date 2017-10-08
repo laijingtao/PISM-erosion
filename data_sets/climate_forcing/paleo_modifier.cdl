@@ -13,15 +13,10 @@ variables:
 	float frac_P(time) ;
 	float delta_T(time) ;
 		delta_T:units = "Kelvin" ;
-
-// global attributes:
-		:Conventions = "CF-1.5" ;
-		:Creators = "Andy Aschwanden" ;
-		:Title = "Olympics Climate" ;
 data:
 
- frac_P = 0.5 ;
- delta_T = -6 ;
+ frac_P = 1 ;
+ delta_T = 0 ;
 
  time = 0 ;
  time_bnds = -1000000, 1000000 ;

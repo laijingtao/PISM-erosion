@@ -22,7 +22,7 @@ if not(infile is None):
 
 air_temp_mean_annual = 9.5
 air_temp_mean_july = 15.5
-precipitation = 1500.0
+precipitation = 2000.0
 usurf = 0.0
 
 outdata = Dataset(outfile, 'w')
