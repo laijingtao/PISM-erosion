@@ -598,6 +598,7 @@ cd $PBS_O_WORKDIR
 """
     else:
         header = """#!/bin/bash
+set -x -e
 
 """
     return header
