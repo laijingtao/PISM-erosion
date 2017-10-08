@@ -6,7 +6,7 @@ set -x -e
 python build_climate_file.py
 
 /usr/bin/ncgen -b -o paleo_modifier.nc paleo_modifier.cdl
-for T in -7 -6 -5 -4; do
+for T in -7.0 -6.0 -5.0 -4.0; do
     ncap2 -O -s "delta_T(0)=${T};" paleo_modifier.nc paleo_modifier_T_${T}.nc
 done
 
