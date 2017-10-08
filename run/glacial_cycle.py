@@ -130,8 +130,7 @@ if system in ['keeling', 'debug']:
     ncgen = '/usr/bin/ncgen'
 else:
     ncgen = 'ncgen'
-cmd = [ncgen, '-o',
-       pism_config_nc, pism_config_cdl]
+cmd = [ncgen, '-o', pism_config_nc, pism_config_cdl]
 sub.call(cmd)
 
 hydrology = 'diffuse'
