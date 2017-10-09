@@ -168,7 +168,7 @@ topg_min_values = [-500]
 topg_max_values = [4000]
 temp_lapse_rate_values = [6.0]
 if do_delta_T:
-    delta_T_values = [-4., -5., -6., -7.]
+    delta_T_values = [1.5, 0.0, -1.5]
 else:
     delta_T_values = [0.0]
 if do_frac_P:
@@ -275,17 +275,9 @@ for n, combination in enumerate(combinations):
         # Setup Climate Forcing
         climate_file = os.path.join(
                 pism_work_dir, 'data_sets/climate_forcing/constant_climate.nc')
-        if do_delta_T:
-            atmosphere_paleo_file = os.path.join(
-                    pism_work_dir,
-                    'data_sets/climate_forcing/paleo_modifier_T_{}.nc'.format(delta_T))
-        elif do_frac_P:
-            atmosphere_paleo_file = os.path.join(
-                    pism_work_dir,
-                    'data_sets/climate_forcing/paleo_modifier_P_{}.nc'.format(frac_P))
-        else:
-            atmosphere_paleo_file = os.path.join(
-                    pism_work_dir, 'data_sets/climate_forcing/paleo_modifier.nc')
+        atmosphere_paleo_file = os.path.join(
+                pism_work_dir,
+                'data_sets/climate_forcing/paleo_modifier_T_{}_P_{}.nc'.format(delta_T, frac_P))
         cmd = ['cp', climate_file, 
                 os.path.join(odir, 'climate_file_{}.nc'.format(experiment))]
         sub.call(cmd)
