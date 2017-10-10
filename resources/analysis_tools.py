@@ -15,6 +15,37 @@ from netCDF4 import Dataset
 #sys.path.append('../../resources/')
 #from resources import *
 
+def generate_file_names_synthetic():
+    domain = 'synthetic'
+    grid = '1000'
+    start = -125000
+    end = 0
+    stress_balance = 'ssa+sia'
+    climate = 'paleo'
+    delta_T_values = [1.5, 0.0, -1.5]
+    frac_P_values = [0.5, 1.0, 1.5]
+    combinations = list(itertools.product(delta_T_values, frac_P_values))
+
+    file_name_list = []
+    for n, combination in enumerate(combinations):
+        delta_T, frac_P = combination
+
+        name_options = OrderedDict()
+        name_options['sb'] = stress_balance
+        name_options['delta_T'] = delta_T
+        name_options['frac_P'] = frac_P
+        experiment =  '_'.join([climate, '_'.join(['_'.join([k, str(v)]) for k, v
+            in name_options.items()])])
+        file_name =\
+        '{domain}_g{grid}m_{experiment}_{start}_{end}a.nc'.format(domain=domain.lower(),
+                                                                  grid=grid,
+                                                                  experiment=experiment,
+                                                                  start=int(start),
+                                                                  end=int(end))
+        file_name_list.append(file_name)
+        
+    return file_name_list
+
 
 def generate_file_names():
     domain = 'olympics'
