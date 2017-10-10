@@ -29,7 +29,7 @@ parser.add_argument("--climate", dest="climate",
                     help="Climate", default='paleo')
 parser.add_argument("-d", "--domain", dest="domain",
                     choices=['olympics', 'olympics_mtns', 'synthetic'],
-                    help="sets the modeling domain", default='olympics')
+                    help="sets the modeling domain", default='synthetic')
 parser.add_argument("--start_year", dest="start", type=float,
                     help="Start year", default=0)
 parser.add_argument("--duration", dest="duration", type=float,
@@ -191,6 +191,7 @@ tsstep = 'yearly'
 
 scripts = []
 scripts_post = []
+outfile_names = []
 
 for n, combination in enumerate(combinations):
 
@@ -228,6 +229,7 @@ for n, combination in enumerate(combinations):
                                                                             experiment=experiment,
                                                                             start=int(start),
                                                                             end=int(end))
+        outfile_names.append(outfile)
 
         prefix = generate_prefix_str(pism_exec)
 
@@ -368,6 +370,10 @@ print '\n'.join([script for script in scripts])
 print('\nwritten\n')
 print '\n'.join([script for script in scripts_post])
 print('\nwritten\n')
+
+with open(os.path.join(odir, 'file_name_list.txt'), 'w') as f:
+    for outfile in outfile_names:
+        f.write(outfile+'\n')
 
 if system in ['keeling']:
     with open('submit_batch.sh', 'w') as f:
