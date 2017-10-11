@@ -79,5 +79,5 @@ def write_dem(mg, outfile):
     outdata.close()
 
 if __name__ == '__main__':
-    mg = build_dem(grid=1000)
+    mg = build_dem(grid=200)
     write_dem(mg, 'test_dem.nc')
