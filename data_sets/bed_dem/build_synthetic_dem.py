@@ -11,13 +11,13 @@ from landlab.components.diffusion.diffusion import LinearDiffuser
 from landlab import RasterModelGrid
 
 def build_dem(grid=1000.):
-    x_max = 40000.
-    y_max = 20000.
+    x_max = 80000.
+    y_max = 100000.
     z_max = 0.
     dx = grid
     
-    uplift_rate = 0.004
-    runtime = 2000000.
+    uplift_rate = 0.005
+    runtime = 3000000.
     dt = 500.
     nt = int(runtime/dt)
     K = 1e-5
@@ -31,19 +31,19 @@ def build_dem(grid=1000.):
     z += np.random.rand(len(z))/0.1
     z += (np.max(mg.node_x)-mg.node_x)/x_max*z_max
     
-    land = mg.core_nodes[np.where(mg.node_x[mg.core_nodes]<=35000)]
-    ocean = mg.core_nodes[np.where(mg.node_x[mg.core_nodes]>35000)]
-    z[ocean] = 0.0
+    #land = mg.core_nodes[np.where(mg.node_x[mg.core_nodes]<=35000)]
+    #ocean = mg.core_nodes[np.where(mg.node_x[mg.core_nodes]>35000)]
+    #z[ocean] = 0.0
    
-    mg.set_closed_boundaries_at_grid_edges(False, True, True, True)
+    mg.set_closed_boundaries_at_grid_edges(False, True, False, True)
 
     fr = FlowRouter(mg)
-    sp = FastscapeEroder(mg, K_sp=K)
+    sp = FastscapeEroder(mg, K_sp=K, threshold_sp=10.0*K)
     lin_diffuse = LinearDiffuser(mg, linear_diffusivity=D)
 
     for i in range(nt):
-        #mg.at_node['topographic__elevation'][mg.core_nodes] += uplift_rate*dt
-        mg.at_node['topographic__elevation'][land] += uplift_rate*dt
+        mg.at_node['topographic__elevation'][mg.core_nodes] += uplift_rate*dt
+        #mg.at_node['topographic__elevation'][land] += uplift_rate*dt
         # ramp
         mg.at_node['topographic__elevation'] += \
                 0.0*np.sqrt((float(mg.node_x.max())-mg.node_x)/x_max)*uplift_rate*dt
@@ -57,7 +57,44 @@ def build_dem(grid=1000.):
 
     return mg
 
-def write_dem(mg, outfile):
+def extract_basin(mg):
+    z = mg.at_node['topographic__elevation']
+    node_stack = mg.at_node['flow__upstream_node_order']
+    receiver = mg.at_node['flow__receiver_node']
+
+    isbasin = np.zeros(len(z), dtype=bool)
+    isbasin[np.argmax(mg.at_node['drainage_area'])] = True
+    for node in node_stack:
+        if isbasin[receiver[node]]:
+            isbasin[node] = True
+    z[np.where(np.logical_not(isbasin))] = np.nan
+
+    x_min = mg.node_x[np.where(isbasin)].min()
+    x_max = mg.node_x[np.where(isbasin)].max()
+    y_min = mg.node_y[np.where(isbasin)].min()
+    y_max = mg.node_y[np.where(isbasin)].max()
+    new_domain, = np.where(np.logical_and(
+        np.logical_and(mg.node_x>=x_min, mg.node_x<=x_max),
+        np.logical_and(mg.node_y>=y_min, mg.node_y<=y_max)))
+
+    ncols = int((x_max-x_min)/mg.dx+1)
+    nrows = int((y_max-y_min)/mg.dx+1)
+    dx = mg.dx
+
+    basin = RasterModelGrid(nrows+2, ncols+2, dx)
+    basin.add_zeros('node', 'topographic__elevation', units='m')
+    basin_z = basin.at_node['topographic__elevation']
+    basin_z[basin.core_nodes] = z[new_domain]
+    if mg.node_x[np.argmax(mg.at_node['drainage_area'])]<mg.node_x.max()/2:
+        basin_z = np.flip(basin_z, 1)
+    
+    return basin
+'''
+def add_ocean(mg, width=40000):
+    z = mg.at_node['topographic__elevation']
+'''
+
+def write_dem(mg, outfile, zmin=None, zmax=None):
     print '\nWriting...'
     outdata = Dataset(outfile, 'w')
 
@@ -71,13 +108,21 @@ def write_dem(mg, outfile):
     x_var[:] = mg.node_x[np.where(mg.node_y==0)][1:ncols+1]-mg.dx/2.
     y_var[:] = mg.node_y[np.where(mg.node_x==0)][1:nrows+1]-mg.dx/2.
 
-    topg_var = outdata.createVariable('topg', np.float64, ('y', 'x',))
-    topg_var[:] = mg.at_node['topographic__elevation'][mg.core_nodes]
-    topg_var[:] -= topg_var[:].min()
+    topg_var = outdata.createVariable('topg', np.float64, ('y', 'x',), fill_value=-2e9)
+    z = mg.at_node['topographic__elevation'][mg.core_nodes]
+    z = np.ma.array(z, mask=np.isnan(z))
+    z = z.reshape(nrows, ncols)
+    if zmin is None:
+        zmin = z.min()
+    if zmax is None:
+        zmax = z.max()
+    z = (z-z.min())/(z.max()-z.min())*(zmax-zmin)+zmin
+    topg_var[:] = z
     topg_var.units = 'm'
 
     outdata.close()
 
 if __name__ == '__main__':
-    mg = build_dem(grid=200)
-    write_dem(mg, 'test_dem.nc')
+    mg = build_dem(grid=1000)
+    mg = extract_basin(mg)
+    write_dem(mg, 'test_dem.nc', zmin=0, zmax=3000)
