@@ -10,7 +10,7 @@ from landlab.components.stream_power.fastscape_stream_power_JL import FastscapeE
 from landlab.components.diffusion.diffusion import LinearDiffuser
 from landlab import RasterModelGrid
 
-def build_dem(grid=1000.):
+def build_dem(grid=1000., zmax=None):
     x_max = 100000.
     y_max = 100000.
     z_max = 0.
@@ -21,7 +21,7 @@ def build_dem(grid=1000.):
     dt = 10000.
     nt = int(runtime/dt)
     K = 1e-5
-    D = 0.1
+    D = 0.01
 
     nrows = int(y_max/grid)
     ncols = int(x_max/grid)
@@ -47,8 +47,12 @@ def build_dem(grid=1000.):
                 0.0*np.absolute(mg.node_y-mg.node_y.mean())/(y_max/2)*uplift_rate*dt
         mg = fr.route_flow(routing_flat=False)
         mg = sp.erode(mg, dt)
-        #mg = lin_diffuse.diffuse(dt)
+        mg = lin_diffuse.diffuse(dt)
         print 'Building... [{}%]\r'.format(int((i+1)*100.0/nt)),
+
+    if zmax is not None:
+        z = mg.at_node['topographic__elevation']
+        z[np.where(z>zmax)] = zmax
 
     return mg
 
@@ -83,7 +87,6 @@ def extract_basin(mg):
     ncols = int((x_max-x_min)/mg.dx+1)
     nrows = int((y_max-y_min)/mg.dx+1)
     dx = mg.dx
-
     basin = RasterModelGrid(nrows+2, ncols+2, dx)
     basin.add_zeros('node', 'topographic__elevation', units='m')
     basin_z = basin.at_node['topographic__elevation']
@@ -114,6 +117,7 @@ def write_dem(mg, outfile, zmin=None, zmax=None):
 
     topg_var = outdata.createVariable('topg', np.float64, ('y', 'x',), fill_value=-100.0)
     z = mg.at_node['topographic__elevation'][mg.core_nodes]
+    #z[np.where(z>zmax)] = np.nan
     z = np.ma.array(z, mask=np.isnan(z))
     z = z.reshape(nrows, ncols)
     if zmin is None:
@@ -127,6 +131,6 @@ def write_dem(mg, outfile, zmin=None, zmax=None):
     outdata.close()
 
 if __name__ == '__main__':
-    mg = build_dem(grid=1000)
+    mg = build_dem(grid=1000, zmax=None)
     mg = extract_basin(mg)
     write_dem(mg, 'test_dem.nc', zmin=0, zmax=3000)
