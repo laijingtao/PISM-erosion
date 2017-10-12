@@ -57,4 +57,6 @@ for var_name in var_name_list:
     var[:] = var_value[var_name]
     var.units = var_unit[var_name]
 
+outdata.variables['usurf'].standard_name = 'surface_altitude'
+
 outdata.close()
