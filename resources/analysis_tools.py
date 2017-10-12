@@ -58,8 +58,7 @@ def generate_file_names():
     sia_e_values = [1.0, 3.0]
     q_values = [0.33, 0.5]
     phi_values = [20, 30]
-    combinations = list(itertools.product(sia_e_values,
-                                          q_values,
+    combinations = list(itertools.product(sia_e_values, q_values,
                                           phi_values))
 
     file_name_list = []
@@ -166,22 +165,26 @@ def nc_copy_var(infile=None, outfile=None, var=None):
     indata.close()
     outdata.close()
 
-'''
-def nc_regrid(infile=None, outfile=None, grid=None):
-    if infile is None:
-        sys.exit('Error: must provide an infile')
-    if outfile is None:
-        sys.exit('Error: must provide an outfile')
-    if grid is None:
-        sys.exit('Error: must provide a new grid resolution')
+def nc_regrid_dem(infile=None, outfile=None, grid=None):
+    # Based on gdalwarp and nco
+    cmd = ['gdalwarp', '-of', 'netCDF', '-overwrite', 
+           '-tr', str(grid), str(grid), infile, outfile]
+    print ' '.join(cmd)
+    sub.call(cmd)
+    cmd = ['ncrename', '-v', 'Band1,topg', '-v', 'lon,x', '-v', 'lat,y', outfile]
+    print ' '.join(cmd)
+    sub.call(cmd)
+    cmd = ['ncrename', '-d', 'lon,x', '-d', 'lat,y', outfile]
+    print ' '.join(cmd)
+    sub.call(cmd)
+    cmd = ['ncatted', '-a', 'units,x,o,c,m', '-a', 'units,y,o,c,m',
+           '-a', 'standard_name,x,d,,', '-a', 'long_name,x,d,,', 
+           '-a', 'standard_name,y,d,,', '-a', 'long_name,y,d,,', 
+           '-a', 'long_name,topg,d,,', '-a', '_FillValue,topg,o,f,-2.0e9',
+           outfile]
+    print ' '.join(cmd)
+    sub.call(cmd)
 
-    indata = Dataset(infile, 'r')
-    outdata = Dataset(outfile, 'w')
-
-    dim_list = indata.dimensions.keys()
-    var_list = indata.variables.keys() 
-'''
-    
 def get_grid_size(infile):
     indata = Dataset(infile, 'r')
     try:
