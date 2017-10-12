@@ -11,14 +11,14 @@ from landlab.components.diffusion.diffusion import LinearDiffuser
 from landlab import RasterModelGrid
 
 def build_dem(grid=1000.):
-    x_max = 80000.
+    x_max = 100000.
     y_max = 100000.
     z_max = 0.
     dx = grid
     
     uplift_rate = 0.005
-    runtime = 3000000.
-    dt = 500.
+    runtime = 2000000.
+    dt = 1000.
     nt = int(runtime/dt)
     K = 1e-5
     D = 0.1
@@ -62,6 +62,10 @@ def extract_basin(mg):
     node_stack = mg.at_node['flow__upstream_node_order']
     receiver = mg.at_node['flow__receiver_node']
 
+    if mg.node_x[np.argmax(mg.at_node['drainage_area'])]<mg.node_x.max()/2:
+        left_outlet = True
+    else:
+        left_outlet = False
     isbasin = np.zeros(len(z), dtype=bool)
     isbasin[np.argmax(mg.at_node['drainage_area'])] = True
     for node in node_stack:
@@ -71,6 +75,10 @@ def extract_basin(mg):
 
     x_min = mg.node_x[np.where(isbasin)].min()
     x_max = mg.node_x[np.where(isbasin)].max()
+    if left_outlet:
+        x_min += 2000
+    else:
+        x_max -= 2000
     y_min = mg.node_y[np.where(isbasin)].min()
     y_max = mg.node_y[np.where(isbasin)].max()
     new_domain, = np.where(np.logical_and(
@@ -85,10 +93,14 @@ def extract_basin(mg):
     basin.add_zeros('node', 'topographic__elevation', units='m')
     basin_z = basin.at_node['topographic__elevation']
     basin_z[basin.core_nodes] = z[new_domain]
-    if mg.node_x[np.argmax(mg.at_node['drainage_area'])]<mg.node_x.max()/2:
-        basin_z = np.flip(basin_z, 1)
+    if left_outlet:
+        tmp = basin_z.reshape(nrows+2, ncols+2)
+        tmp = np.fliplr(tmp)
+        basin_z = tmp.reshape((nrows+2)*(ncols+2))
+        basin.at_node['topographic__elevation'] = basin_z
     
     return basin
+
 '''
 def add_ocean(mg, width=40000):
     z = mg.at_node['topographic__elevation']
@@ -108,7 +120,7 @@ def write_dem(mg, outfile, zmin=None, zmax=None):
     x_var[:] = mg.node_x[np.where(mg.node_y==0)][1:ncols+1]-mg.dx/2.
     y_var[:] = mg.node_y[np.where(mg.node_x==0)][1:nrows+1]-mg.dx/2.
 
-    topg_var = outdata.createVariable('topg', np.float64, ('y', 'x',), fill_value=-2e9)
+    topg_var = outdata.createVariable('topg', np.float64, ('y', 'x',), fill_value=-100.0)
     z = mg.at_node['topographic__elevation'][mg.core_nodes]
     z = np.ma.array(z, mask=np.isnan(z))
     z = z.reshape(nrows, ncols)
