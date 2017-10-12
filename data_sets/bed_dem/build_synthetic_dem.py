@@ -18,7 +18,7 @@ def build_dem(grid=1000.):
     
     uplift_rate = 0.005
     runtime = 2000000.
-    dt = 1000.
+    dt = 10000.
     nt = int(runtime/dt)
     K = 1e-5
     D = 0.1
@@ -62,10 +62,10 @@ def extract_basin(mg):
     node_stack = mg.at_node['flow__upstream_node_order']
     receiver = mg.at_node['flow__receiver_node']
 
-    if mg.node_x[np.argmax(mg.at_node['drainage_area'])]<mg.node_x.max()/2:
-        left_outlet = True
+    if mg.node_x[np.argmax(mg.at_node['drainage_area'])]>mg.node_x.max()/2:
+        right_outlet = True
     else:
-        left_outlet = False
+        right_outlet = False
     isbasin = np.zeros(len(z), dtype=bool)
     isbasin[np.argmax(mg.at_node['drainage_area'])] = True
     for node in node_stack:
@@ -75,10 +75,10 @@ def extract_basin(mg):
 
     x_min = mg.node_x[np.where(isbasin)].min()
     x_max = mg.node_x[np.where(isbasin)].max()
-    if left_outlet:
-        x_min += 2000
-    else:
+    if right_outlet:
         x_max -= 2000
+    else:
+        x_min += 2000
     y_min = mg.node_y[np.where(isbasin)].min()
     y_max = mg.node_y[np.where(isbasin)].max()
     new_domain, = np.where(np.logical_and(
@@ -93,18 +93,13 @@ def extract_basin(mg):
     basin.add_zeros('node', 'topographic__elevation', units='m')
     basin_z = basin.at_node['topographic__elevation']
     basin_z[basin.core_nodes] = z[new_domain]
-    if left_outlet:
+    if right_outlet:
         tmp = basin_z.reshape(nrows+2, ncols+2)
         tmp = np.fliplr(tmp)
         basin_z = tmp.reshape((nrows+2)*(ncols+2))
         basin.at_node['topographic__elevation'] = basin_z
     
     return basin
-
-'''
-def add_ocean(mg, width=40000):
-    z = mg.at_node['topographic__elevation']
-'''
 
 def write_dem(mg, outfile, zmin=None, zmax=None):
     print '\nWriting...'
