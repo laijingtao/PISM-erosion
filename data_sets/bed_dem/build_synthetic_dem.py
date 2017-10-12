@@ -118,7 +118,9 @@ def write_dem(mg, outfile, zmin=None, zmax=None):
     x_var = outdata.createVariable('x', np.float64, ('x',))
     y_var = outdata.createVariable('y', np.float64, ('y',))
     x_var[:] = mg.node_x[np.where(mg.node_y==0)][1:ncols+1]-mg.dx/2.
+    x_var.units = 'm'
     y_var[:] = mg.node_y[np.where(mg.node_x==0)][1:nrows+1]-mg.dx/2.
+    y_var.units = 'm'
 
     topg_var = outdata.createVariable('topg', np.float64, ('y', 'x',), fill_value=-100.0)
     z = mg.at_node['topographic__elevation'][mg.core_nodes]
