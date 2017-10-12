@@ -184,7 +184,8 @@ def generate_snap_shots(outfile, times, odir=None):
     return params_dict
 
 
-def generate_grid_description(grid_resolution, accepted_resolutions, domain, restart=False):
+def generate_grid_description(grid_resolution, accepted_resolutions, domain,
+                              dem_file=None, restart=False):
     '''
     Generate grid description dict
 
@@ -198,10 +199,20 @@ def generate_grid_description(grid_resolution, accepted_resolutions, domain, res
         mx_max = 2400
         my_max = 2000
     elif domain.lower() in ['synthetic']:
+        if dem_file is None:
+            import sys
+            sys.exit('Must provide a dem file')
+        from netCDF4 import Dataset
+        dem_data = Dataset(dem_file, 'r')
+        x_len = abs(dem_data.variables['x'][0]-dem_data.variables['x'][-1])\
+                + abs(dem_data.variables['x'][0]-dem_data.variables['x'][1])
+        y_len = abs(dem_data.variables['y'][0]-dem_data.variables['y'][-1])\
+                + abs(dem_data.variables['y'][0]-dem_data.variables['y'][1])
+        dem_data.close()
         # mx_max = 40km/50m
         # my_max = 20km/50m
-        mx_max = 800
-        my_max = 400
+        mx_max = int(x_len/50.)
+        my_max = int(y_len/50.)
     else:
         print('domain {} not recongnized'.format(domain))
     resolution_max = 50

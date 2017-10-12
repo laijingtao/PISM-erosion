@@ -251,14 +251,17 @@ for n, combination in enumerate(combinations):
         general_params_dict['config_override'] = pism_config_nc
 
         if input_file is None:
-            grid_params_dict = generate_grid_description(grid, accepted_resolutions(), domain)
+            grid_params_dict = generate_grid_description(grid, accepted_resolutions(), domain,
+                                                         dem_file=pism_dataname)
         else:
             if bootstrap:
                 grid_params_dict = generate_grid_description(grid, accepted_resolutions(), 
-                                                             domain, restart=False)
+                                                             domain, dem_file=pism_dataname,
+                                                             restart=False)
             else:
                 grid_params_dict = generate_grid_description(grid, accepted_resolutions(), 
-                                                             domain, restart=True)
+                                                             domain, dem_file=pism_dataname,
+                                                             restart=True)
 
         # Setup Stress Balance Paramters
         sb_params_dict = OrderedDict()
