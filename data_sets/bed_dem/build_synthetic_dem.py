@@ -10,18 +10,33 @@ from landlab.components.stream_power.fastscape_stream_power_JL import FastscapeE
 from landlab.components.diffusion.diffusion import LinearDiffuser
 from landlab import RasterModelGrid
 
-def build_dem(grid=1000., zmax=None):
+def build_dem(grid=1000., z_limit=None, *args, **kwargs):
     x_max = 100000.
     y_max = 100000.
     z_max = 0.
     dx = grid
     
-    uplift_rate = 0.005
-    runtime = 5000000.
-    dt = 10000.
+    try:
+        uplift_rate = kwargs['uplift_rate']
+    except:
+        uplift_rate = 0.005
+    try:
+        runtime = kwargs['runtime']
+    except:
+        runtime = 5000000.
+    try:
+        dt = kwargs['dt']
+    except:
+        dt = 10000.
     nt = int(runtime/dt)
-    K = 1e-5
-    D = 0.01
+    try:
+        K = kwargs['K']
+    except:
+        K = 1e-5
+    try:
+        D = kwargs['D']
+    except:
+        D = 0.01
 
     nrows = int(y_max/grid)
     ncols = int(x_max/grid)
@@ -31,10 +46,10 @@ def build_dem(grid=1000., zmax=None):
     z += np.random.rand(len(z))/0.1
     z += (np.max(mg.node_x)-mg.node_x)/x_max*z_max
    
-    mg.set_closed_boundaries_at_grid_edges(False, True, False, True)
+    mg.set_closed_boundaries_at_grid_edges(False, False, False, False)
 
     fr = FlowRouter(mg)
-    sp = FastscapeEroder(mg, K_sp=K, threshold_sp=10.0*K)
+    sp = FastscapeEroder(mg, K_sp=K, threshold_sp=50.0*K)
     lin_diffuse = LinearDiffuser(mg, linear_diffusivity=D)
 
     for i in range(nt):
@@ -50,9 +65,9 @@ def build_dem(grid=1000., zmax=None):
         mg = lin_diffuse.diffuse(dt)
         print 'Building... [{}%]\r'.format(int((i+1)*100.0/nt)),
 
-    if zmax is not None:
+    if z_limit is not None:
         z = mg.at_node['topographic__elevation']
-        z[np.where(z>zmax)] = zmax
+        z[np.where(z>z_limit)] = z_limit
 
     return mg
 
@@ -61,12 +76,17 @@ def extract_basin(mg):
     node_stack = mg.at_node['flow__upstream_node_order']
     receiver = mg.at_node['flow__receiver_node']
 
+    '''
     if mg.node_x[np.argmax(mg.at_node['drainage_area'])]>mg.node_x.max()/2:
         right_outlet = True
     else:
         right_outlet = False
+    '''
+    right_outlet = False
+    left_edge, = np.where(mg.node_x==0)
+    outlet = left_edge[np.argmax(mg.at_node['drainage_area'][left_edge])]
     isbasin = np.zeros(len(z), dtype=bool)
-    isbasin[np.argmax(mg.at_node['drainage_area'])] = True
+    isbasin[outlet] = True
     for node in node_stack:
         if isbasin[receiver[node]]:
             isbasin[node] = True
