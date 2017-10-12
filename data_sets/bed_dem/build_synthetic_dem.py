@@ -43,6 +43,7 @@ def build_dem(grid=1000., z_limit=None, *args, **kwargs):
     mg = RasterModelGrid(nrows+2, ncols+2, dx)
     mg.add_zeros('node', 'topographic__elevation', units='m')
     z = mg.at_node['topographic__elevation']
+    np.random.seed()
     z += np.random.rand(len(z))/0.1
     z += (np.max(mg.node_x)-mg.node_x)/x_max*z_max
    
