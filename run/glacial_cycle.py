@@ -106,10 +106,11 @@ perf_dir = 'performance'
 state_dir = 'state'
 scalar_dir = 'scalar'
 spatial_dir = 'spatial'
-odir = pism_data_dir+'/'+odir
+postproc_dir = 'postproc'
+odir = os.path.join(pism_data_dir, odir)
 if not os.path.isdir(odir):
     os.mkdir(odir)
-for tsdir in (perf_dir, scalar_dir, spatial_dir, state_dir):
+for tsdir in [perf_dir, scalar_dir, spatial_dir, state_dir, postproc_dir]:
     if not os.path.isdir(os.path.join(odir, tsdir)):
         os.mkdir(os.path.join(odir, tsdir))
 odir_tmp = '_'.join([odir, 'tmp'])
