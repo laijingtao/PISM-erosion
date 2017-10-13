@@ -28,7 +28,7 @@ parser.add_argument("--climate", dest="climate",
                     choices=['elev', 'paleo', 'present'],
                     help="Climate", default='paleo')
 parser.add_argument("-d", "--domain", dest="domain",
-                    choices=['olympics', 'olympics_mtns', 'synthetic'],
+                    choices=['olympics', 'olympics_mtns', 'synthetic', 'fluvial'],
                     help="sets the modeling domain", default='synthetic')
 parser.add_argument("--start_year", dest="start", type=float,
                     help="Start year", default=0)

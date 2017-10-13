@@ -47,7 +47,7 @@ def generate_domain(domain):
     Returns: string
     '''
     
-    if domain.lower() in ('olympics', 'olympics_mtns', 'synthetic'):
+    if domain.lower() in ('olympics', 'olympics_mtns', 'synthetic', 'fluvial'):
         pism_exec = 'pismr'
     else:
         print('Domain {} not recognized, exiting'.format(domain))
@@ -198,7 +198,7 @@ def generate_grid_description(grid_resolution, accepted_resolutions, domain,
     elif domain.lower() in ('olympics_mtns'):
         mx_max = 2400
         my_max = 2000
-    elif domain.lower() in ['synthetic']:
+    elif domain.lower() in ['synthetic', 'fluvial']:
         if dem_file is None:
             import sys
             sys.exit('Must provide a dem file')
