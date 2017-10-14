@@ -63,7 +63,7 @@ parser.add_argument("--stress_balance", dest="stress_balance",
 parser.add_argument("-p", "--params", dest="params_list",
                     help="Comma-separated list with params for sensitivity", default=None)
 parser.add_argument("--batch_scripts_dir", dest="batch_scripts_dir",
-                    help="directory to save batch scripts", default='./batch_scripts/')
+                    help="directory to save batch scripts", default=None)
 
 options = parser.parse_args()
 
@@ -117,6 +117,8 @@ odir_tmp = '_'.join([odir, 'tmp'])
 if not os.path.isdir(odir_tmp):
     os.mkdir(odir_tmp)
 batch_scripts_dir = options.batch_scripts_dir
+if batch_scripts_dir is None:
+    batch_scripts_dir = options.odir
 if not os.path.isdir(batch_scripts_dir):
     os.mkdir(batch_scripts_dir)
 
