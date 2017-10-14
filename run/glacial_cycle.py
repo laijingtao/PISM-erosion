@@ -13,6 +13,7 @@ from argparse import ArgumentParser
 import sys
 sys.path.append('../resources/')
 from resources import *
+from build_climate_file import *
 
 
 # set up the option parser
@@ -73,6 +74,11 @@ osize = options.osize
 queue = options.queue
 walltime = options.walltime
 system = options.system
+bed_version = options.bed_version
+climate = options.climate
+duration = options.duration
+grid = options.grid
+stress_balance = options.stress_balance
 
 if system in ['keeling']:
     pism_data_dir = os.environ['PISM_DATA_DIR']
@@ -80,12 +86,6 @@ if system in ['keeling']:
 else:
     pism_data_dir = './'
     pism_work_dir = '/home/jtlai/research/glacier/pism-erosion/'
-
-bed_version = options.bed_version
-climate = options.climate
-duration = options.duration
-grid = options.grid
-stress_balance = options.stress_balance
 
 #start = options.start
 #end  = start + options.duration
@@ -169,7 +169,7 @@ topg_min_values = [-500]
 topg_max_values = [4000]
 temp_lapse_rate_values = [6.0]
 if do_delta_T:
-    delta_T_values = [1.5, 0.0, -1.5]
+    delta_T_values = [-1.5, 0.0, 1.5]
 else:
     delta_T_values = [0.0]
 if do_frac_P:
@@ -189,6 +189,18 @@ combinations = list(itertools.product(precip_scale_factor_values,
                                       frac_P_values))
 
 tsstep = 'yearly'
+
+# Setup climate file
+build_constant_climate(
+    infile=pism_dataname,
+    outfile=os.path.join(pism_work_dir, 'data_sets/climate_forcing/constant_climate.nc'),
+    air_temp_mean_annual=7.5,
+    air_temp_mean_july=13.5,
+    precipitation=2000)
+build_paleo_modifier(
+    delta_T=delta_T_values,
+    frac_P=frac_P_values,
+    climate_forcing_dir=os.path.join(pism_work_dir, 'data_sets/climate_forcing'))
 
 scripts = []
 scripts_post = []

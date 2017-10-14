@@ -1,18 +1,23 @@
 #!/usr/bin/env python
 # Copyright (C) 2017 Jingtao Lai
 
+import os
 import numpy as np
 from netCDF4 import Dataset
 import subprocess as sub
 
 def build_paleo_modifier(delta_T=[0.0], frac_P=[1.0], *args, **kwargs):
-    cmd = ['/usr/bin/ncgen', '-b', '-o', 'paleo_modifier.nc', 'paleo_modifier.cdl']
+    climate_forcing_dir = kwargs['climate_forcing_dir']
+    cmd = ['/usr/bin/ncgen', '-b', '-o',
+           os.path.join(climate_forcing_dir, 'paleo_modifier.nc'),
+           os.path.join(climate_forcing_dir, 'paleo_modifier.cdl')]
     print ' '.join(cmd)
     sub.call(cmd)
     for P in frac_P:
         for T in delta_T:
             cmd = ['ncap2', '-O', '-s', 'delta_T(0)={};frac_P(0)={}'.format(T, P),
-                   'paleo_modifier.nc', 'paleo_modifier_T_{}_P_{}.nc'.format(T, P)]
+                   os.path.join(climate_forcing_dir, 'paleo_modifier.nc'),
+                   os.path.join(climate_forcing_dir, 'paleo_modifier_T_{}_P_{}.nc'.format(T, P))]
             print ' '.join(cmd)
             sub.call(cmd)
 
