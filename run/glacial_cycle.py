@@ -89,7 +89,7 @@ stress_balance = options.stress_balance
 
 #start = options.start
 #end  = start + options.duration
-start = -125000
+start = -125000/10
 end = 0
 exstep = options.exstep
 domain = options.domain
@@ -173,7 +173,7 @@ if do_delta_T:
 else:
     delta_T_values = [0.0]
 if do_frac_P:
-    frac_P_values = [0.5, 1.0, 1.5]
+    frac_P_values = [0.8, 1.0, 1.2]
 else:
     frac_P_values = [1.0]
 combinations = list(itertools.product(precip_scale_factor_values,
