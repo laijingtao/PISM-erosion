@@ -167,8 +167,12 @@ def nc_copy_var(infile=None, outfile=None, var=None):
 
 def nc_regrid_dem(infile=None, outfile=None, grid=None):
     # Based on gdalwarp and nco
+    # if infile's dimension has units, gdalwarp won't work
+    cmd = ['ncatted', '-a', 'units,x,d,,', '-a', 'units,y,d,,',
+           infile, 'tmp.nc']
+    sub.call(cmd)
     cmd = ['gdalwarp', '-of', 'netCDF', '-overwrite', 
-           '-tr', str(grid), str(grid), infile, outfile]
+           '-tr', str(grid), str(grid), 'tmp.nc', outfile]
     print ' '.join(cmd)
     sub.call(cmd)
     cmd = ['ncrename', '-v', 'Band1,topg', '-v', 'lon,x', '-v', 'lat,y', outfile]
@@ -183,6 +187,8 @@ def nc_regrid_dem(infile=None, outfile=None, grid=None):
            '-a', 'long_name,topg,d,,', '-a', '_FillValue,topg,o,f,-2.0e9',
            outfile]
     print ' '.join(cmd)
+    sub.call(cmd)
+    cmd = ['rm', 'tmp.nc']
     sub.call(cmd)
 
 def get_grid_size(infile):
