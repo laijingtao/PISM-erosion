@@ -451,3 +451,48 @@ def calc_percent_of_time_covered_by_ice(infile=None, outfile=None):
     if not overwrite:
         outdata.close()
 
+def calc_thk_time_averaged(infile=None, outfile=None):
+    if infile is None:
+        sys.exit('Must provide an input file!')
+    overwrite = False
+    if outfile is None:
+        outfile = infile
+        overwrite = True
+    else:
+        nc_copy_dim(infile, outfile)
+
+    indata = Dataset(infile, 'a')
+    if overwrite:
+        outdata = indata
+    else:
+        outdata = Dataset(outfile, 'a')
+
+    time = indata.variables['time'][:]/(365*24*3600.)
+
+    thk = indata.variables['thk'][:]
+    thk_time_averaged = np.zeros(thk[0].shape)
+    for i in range(len(thk)):
+        tmp_thk_slice = thk[i].data
+        tmp_thk_slice[np.where(thk[i].mask)] = 0.
+        if i==0:
+            time_step = (time[i+1]-time[i])/2
+        elif i==len(time)-1:
+            time_step = (time[i]-time[i-1])/2
+        else:
+            time_step = (time[i+1]-time[i-1])/2
+        thk_time_averaged = thk_time_averaged+tmp_thk_slice*time_step
+    thk_time_averaged = thk_time_averaged/(time[-1]-time[0])
+    thk_time_averaged[np.where(thk_time_averaged<=0.)] =\
+        indata.variables['thk']._FillValue
+    try:
+        thk_time_averaged_var = outdata.createVariable(
+            'thk_time_averaged', np.float64, ('y','x',),
+            fill_value=indata.variables['thk']._FillValue)
+    except:
+        thk_time_averaged_var = outdata.variables['thk_time_averaged']
+    thk_time_averaged_var[:] = thk_time_averaged
+    thk_time_averaged_var.units = 'm'
+
+    indata.close()
+    if not overwrite:
+        outdata.close()
