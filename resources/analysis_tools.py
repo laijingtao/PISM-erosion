@@ -220,6 +220,7 @@ def calc_erosion_nco(infile=None, outfile=None):
     sub.call(cmd)
 
 def calc_erosion(infile=None, outfile=None):
+    fill_value = -2.0e9
     if infile is None:
         sys.exit('Must provide an input file!')
     overwrite = False
@@ -245,12 +246,15 @@ def calc_erosion(infile=None, outfile=None):
             erosion = 1e-4*indata.variables['velbase_mag'][:]
         if erosion_name=='erosion_2':
             erosion = 2.7e-7*np.power(indata.variables['velbase_mag'][:], 2.02)
+        erosion[np.where(erosion<=0)] = fill_value
+        erosion = np.ma.masked_values(erosion, fill_value)
         try:
             erosion_var = outdata.createVariable(
                 erosion_name, np.float64, ('time', 'y', 'x',),
-                fill_value=-2000000000.0)
+                fill_value=fill_value)
         except:
             erosion_var = outdata.variables[erosion_name]
+            erosion_var._FillValue = fill_value
         erosion_var[:] = erosion
         erosion_var.units = 'm year-1'
 
