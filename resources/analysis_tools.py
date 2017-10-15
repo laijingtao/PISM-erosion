@@ -452,6 +452,7 @@ def calc_percent_of_time_covered_by_ice(infile=None, outfile=None):
         outdata.close()
 
 def calc_thk_time_averaged(infile=None, outfile=None):
+    fill_value = -2e9
     if infile is None:
         sys.exit('Must provide an input file!')
     overwrite = False
@@ -472,8 +473,7 @@ def calc_thk_time_averaged(infile=None, outfile=None):
     thk = indata.variables['thk'][:]
     thk_time_averaged = np.zeros(thk[0].shape)
     for i in range(len(thk)):
-        tmp_thk_slice = thk[i].data
-        tmp_thk_slice[np.where(thk[i].mask)] = 0.
+        tmp_thk_slice = thk[i]
         if i==0:
             time_step = (time[i+1]-time[i])/2
         elif i==len(time)-1:
@@ -482,14 +482,16 @@ def calc_thk_time_averaged(infile=None, outfile=None):
             time_step = (time[i+1]-time[i-1])/2
         thk_time_averaged = thk_time_averaged+tmp_thk_slice*time_step
     thk_time_averaged = thk_time_averaged/(time[-1]-time[0])
-    thk_time_averaged[np.where(thk_time_averaged<=0.)] =\
-        indata.variables['thk']._FillValue
+    thk_time_averaged[np.where(thk_time_averaged<=0.)] = fill_value
+    thk_time_averaged = np.ma.masked_values(thk_time_averaged,
+                                            fill_value)
     try:
         thk_time_averaged_var = outdata.createVariable(
             'thk_time_averaged', np.float64, ('y','x',),
-            fill_value=indata.variables['thk']._FillValue)
+            fill_value=fill_value)
     except:
         thk_time_averaged_var = outdata.variables['thk_time_averaged']
+        thk_time_averaged_var._FillValue = fill_value
     thk_time_averaged_var[:] = thk_time_averaged
     thk_time_averaged_var.units = 'm'
 
