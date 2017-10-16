@@ -165,14 +165,19 @@ def nc_copy_var(infile=None, outfile=None, var=None):
     indata.close()
     outdata.close()
 
-def nc_regrid_dem(infile=None, outfile=None, grid=None):
+def nc_regrid_dem(infile=None, outfile=None, grid=None, *args, **kwargs):
     # Based on gdalwarp and nco
+    try:
+        fill_value = kwargs['fill_value']
+    except:
+        fill_value = -2.e9
     # if infile's dimension has units, gdalwarp won't work
     cmd = ['ncatted', '-a', 'units,x,d,,', '-a', 'units,y,d,,',
            infile, 'tmp.nc']
     sub.call(cmd)
     cmd = ['gdalwarp', '-of', 'netCDF', '-overwrite', 
-           '-tr', str(grid), str(grid), 'tmp.nc', outfile]
+           '-tr', str(grid), str(grid), '-srcnodata', str(fill_value),
+           '-dstnodata', str(fill_value), 'tmp.nc', outfile]
     print ' '.join(cmd)
     sub.call(cmd)
     cmd = ['ncrename', '-v', 'Band1,topg', '-v', 'lon,x', '-v', 'lat,y', outfile]
@@ -184,7 +189,7 @@ def nc_regrid_dem(infile=None, outfile=None, grid=None):
     cmd = ['ncatted', '-a', 'units,x,o,c,m', '-a', 'units,y,o,c,m',
            '-a', 'standard_name,x,d,,', '-a', 'long_name,x,d,,', 
            '-a', 'standard_name,y,d,,', '-a', 'long_name,y,d,,', 
-           '-a', 'long_name,topg,d,,', '-a', '_FillValue,topg,o,f,-2.0e9',
+           '-a', 'long_name,topg,d,,', '-a', '_FillValue,topg,o,f,{}'.format(fill_value),
            outfile]
     print ' '.join(cmd)
     sub.call(cmd)
