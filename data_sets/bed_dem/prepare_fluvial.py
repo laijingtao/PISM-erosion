@@ -11,7 +11,7 @@ version = 1
 fill_value = -100
 
 cleanup(infile=infile, outfile='pism_Fluvial_v{}.nc'.format(version), 
-        grid=50, zlim=[0., None], fill_value=fill_value)
+        grid=50, fill_value=fill_value)
 
 for grid in [100, 250, 500, 1000]:
     print 'Grid resolution =', grid

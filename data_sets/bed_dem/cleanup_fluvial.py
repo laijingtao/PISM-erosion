@@ -70,6 +70,7 @@ def cleanup(infile=None, outfile=None, grid=100, *args, **kwargs):
         zmin = topg_out.min()
     if zmax is None:
         zmax = topg_out.max()
+    topg_out -= topg_out.min()
     topg_out = (topg_out-topg_out.min())/(topg_out.max()-topg_out.min())*(zmax-zmin)+zmin
     topg_var[:] = topg_out
     topg_var.units = 'm'
