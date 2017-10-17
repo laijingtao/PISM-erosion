@@ -3,6 +3,10 @@ from netCDF4 import Dataset
 import subprocess as sub
 
 def cleanup(infile=None, outfile=None, grid=100, *args, **kwargs):
+    try:
+        fill_value = kwargs['fill_value']
+    except:
+        fill_value = -100
     cmd = ['/usr/bin/gdalwarp', '-of', 'netCDF', '-overwrite',
            '-tr', str(grid), str(grid), infile, 'tmp_fluvial.nc']
     print ' '.join(cmd)
@@ -54,7 +58,7 @@ def cleanup(infile=None, outfile=None, grid=100, *args, **kwargs):
     x_var.units = 'm'
     y_var.units = 'm'
 
-    topg_var = outdata.createVariable('topg', np.float64, ('y', 'x',), fill_value=-100)
+    topg_var = outdata.createVariable('topg', np.float64, ('y', 'x',), fill_value=fill_value)
     topg_out = topg_in[y_min:y_max+1, x_min:x_max+1]
     topg_out = np.ma.array(topg_out, mask=np.isnan(topg_out))
     try:
@@ -66,6 +70,7 @@ def cleanup(infile=None, outfile=None, grid=100, *args, **kwargs):
         zmin = topg_out.min()
     if zmax is None:
         zmax = topg_out.max()
+    topg_out -= topg_out.min()
     topg_out = (topg_out-topg_out.min())/(topg_out.max()-topg_out.min())*(zmax-zmin)+zmin
     topg_var[:] = topg_out
     topg_var.units = 'm'
