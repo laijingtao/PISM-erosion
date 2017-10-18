@@ -85,7 +85,7 @@ if system in ['keeling']:
     pism_work_dir = '/data/keeling/a/jlai11/glacier/pism-erosion/'
 else:
     pism_data_dir = './'
-    pism_work_dir = '/home/jtlai/research/glacier/pism-erosion/'
+    pism_work_dir = '../'
 
 #start = options.start
 #end  = start + options.duration
@@ -193,6 +193,7 @@ combinations = list(itertools.product(precip_scale_factor_values,
 tsstep = 'yearly'
 
 # Setup climate file
+print pism_dataname
 build_constant_climate(
     infile=pism_dataname,
     outfile=os.path.join(pism_work_dir, 'data_sets/climate_forcing/constant_climate.nc'),
