@@ -118,7 +118,10 @@ if not os.path.isdir(odir_tmp):
     os.mkdir(odir_tmp)
 batch_scripts_dir = options.batch_scripts_dir
 if batch_scripts_dir is None:
-    batch_scripts_dir = options.odir
+    if system in ['keeling']:
+        batch_scripts_dir = options.odir
+    else:
+        batch_scripts_dir = './'
 if not os.path.isdir(batch_scripts_dir):
     os.mkdir(batch_scripts_dir)
 
