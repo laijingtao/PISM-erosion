@@ -200,8 +200,8 @@ print pism_dataname
 build_constant_climate(
     infile=pism_dataname,
     outfile=os.path.join(pism_work_dir, 'data_sets/climate_forcing/constant_climate.nc'),
-    air_temp_mean_annual=7.5,
-    air_temp_mean_july=13.5,
+    air_temp_mean_annual=10,
+    air_temp_mean_july=15,
     precipitation=2000)
 build_paleo_modifier(
     delta_T=delta_T_values,

@@ -44,17 +44,27 @@ def build_dem(grid=1000., z_limit=None, *args, **kwargs):
     mg.add_zeros('node', 'topographic__elevation', units='m')
     z = mg.at_node['topographic__elevation']
     np.random.seed()
-    z += np.random.rand(len(z))/0.1
-    z += (np.max(mg.node_x)-mg.node_x)/x_max*z_max
+    z += np.random.rand(len(z))/0.01
+    z += (1.0-abs(x_max/2.0-mg.node_x)/(x_max/2.0))*z_max
    
-    mg.set_closed_boundaries_at_grid_edges(False, False, False, False)
+    mg.set_closed_boundaries_at_grid_edges(False, True, False, True)
+    #mg.set_looped_boundaries(top_bottom_are_looped=True, sides_are_looped=False)
 
     fr = FlowRouter(mg)
-    sp = FastscapeEroder(mg, K_sp=K, threshold_sp=50.0*K)
+    try:
+        threshold_AS = kwargs['threshold_AS']
+    except:
+        threshold_AS = 10.0
+    if threshold_AS>0:
+        sp = FastscapeEroder(mg, K_sp=K, threshold_sp=threshold_AS*K)
+    else:
+        sp = FastscapeEroder(mg, K_sp=K)
     lin_diffuse = LinearDiffuser(mg, linear_diffusivity=D)
 
     for i in range(nt):
         mg.at_node['topographic__elevation'][mg.core_nodes] += uplift_rate*dt
+        #mg.at_node['topographic__elevation'][np.where(mg.node_y==mg.node_y.max())] += uplift_rate*dt
+        #mg.at_node['topographic__elevation'][np.where(mg.node_y==mg.node_y.min())] += uplift_rate*dt
         # ramp
         mg.at_node['topographic__elevation'] += \
                 0.0*np.sqrt((float(mg.node_x.max())-mg.node_x)/x_max)*uplift_rate*dt
@@ -63,7 +73,8 @@ def build_dem(grid=1000., z_limit=None, *args, **kwargs):
                 0.0*np.absolute(mg.node_y-mg.node_y.mean())/(y_max/2)*uplift_rate*dt
         mg = fr.route_flow(routing_flat=False)
         mg = sp.erode(mg, dt)
-        mg = lin_diffuse.diffuse(dt)
+        if D>0:
+            mg = lin_diffuse.diffuse(dt)
         print 'Building... [{}%]\r'.format(int((i+1)*100.0/nt)),
 
     if z_limit is not None:
@@ -132,12 +143,15 @@ def write_dem(mg, outfile, zmin=None, zmax=None):
     x_var = outdata.createVariable('x', np.float64, ('x',))
     y_var = outdata.createVariable('y', np.float64, ('y',))
     x_var[:] = mg.node_x[np.where(mg.node_y==0)][1:ncols+1]-mg.dx/2.
+    #x_var[:] = mg.node_x[np.where(mg.node_y==0)][0:ncols]+mg.dx/2.
     x_var.units = 'm'
     y_var[:] = mg.node_y[np.where(mg.node_x==0)][1:nrows+1]-mg.dx/2.
+    #y_var[:] = mg.node_y[np.where(mg.node_x==0)][0:nrows]+mg.dx/2.
     y_var.units = 'm'
 
     topg_var = outdata.createVariable('topg', np.float64, ('y', 'x',), fill_value=-100.0)
     z = mg.at_node['topographic__elevation'][mg.core_nodes]
+    #z = mg.at_node['topographic__elevation']
     #z[np.where(z>zmax)] = np.nan
     z = np.ma.array(z, mask=np.isnan(z))
     z = z.reshape(nrows, ncols)
@@ -152,6 +166,6 @@ def write_dem(mg, outfile, zmin=None, zmax=None):
     outdata.close()
 
 if __name__ == '__main__':
-    mg = build_dem(grid=1000, zmax=None)
-    mg = extract_basin(mg)
-    write_dem(mg, 'test_dem.nc', zmin=0, zmax=3000)
+    mg = build_dem(grid=1000, z_limit=None, D=0.01, dt=10000, threshold_AS=0.0)
+    #mg = extract_basin(mg)
+    write_dem(mg, 'test_dem.nc')
