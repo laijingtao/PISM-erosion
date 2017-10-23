@@ -87,10 +87,10 @@ else:
     pism_data_dir = './'
     pism_work_dir = '../'
 
-#start = options.start
-#end  = start + options.duration
-start = -125000/10
-end = 0
+start = options.start
+end  = start + options.duration
+#start = 0
+#end = 125000/10
 exstep = options.exstep
 domain = options.domain
 pism_exec = generate_domain(domain)
