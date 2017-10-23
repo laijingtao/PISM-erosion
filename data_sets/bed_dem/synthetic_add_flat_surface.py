@@ -65,8 +65,10 @@ def add_flat_surface_right(infile=None, outfile=None, width=20000.0):
                          indata.variables['x'][:].max()+width+grid/2.0,
                          grid)
     x_var.units = 'm'
+    x_var.standard_name = 'projection_x_coordinate'
     y_var[:] = indata.variables['y'][:]
     y_var.units = 'm'
+    y_var.standard_name = 'projection_y_coordinate'
     z_var[:] = z_out
     z_var.units = 'm'
     z_var.standard_name = 'bedrock_altitude'

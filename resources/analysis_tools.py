@@ -160,8 +160,8 @@ def nc_regrid_dem(infile=None, outfile=None, grid=None, *args, **kwargs):
     print ' '.join(cmd)
     sub.call(cmd)
     cmd = ['ncatted', '-a', 'units,x,o,c,m', '-a', 'units,y,o,c,m',
-           '-a', 'standard_name,x,d,,', '-a', 'long_name,x,d,,', 
-           '-a', 'standard_name,y,d,,', '-a', 'long_name,y,d,,', 
+           '-a', 'standard_name,x,o,c,projection_x_coordinate', '-a', 'long_name,x,d,,', 
+           '-a', 'standard_name,y,o,c,projection_y_coordinate', '-a', 'long_name,y,d,,', 
            '-a', 'long_name,topg,d,,', '-a', '_FillValue,topg,o,f,{}'.format(fill_value),
            '-a', 'standard_name,topg,o,c,bedrock_altitude',
            outfile]
