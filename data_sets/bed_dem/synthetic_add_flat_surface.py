@@ -69,6 +69,7 @@ def add_flat_surface_right(infile=None, outfile=None, width=20000.0):
     y_var.units = 'm'
     z_var[:] = z_out
     z_var.units = 'm'
+    z_var.standard_name = 'bedrock_altitude'
 
     indata.close()
     outdata.close()
