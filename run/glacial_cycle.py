@@ -200,8 +200,8 @@ print pism_dataname
 build_constant_climate(
     infile=pism_dataname,
     outfile=os.path.join(pism_work_dir, 'data_sets/climate_forcing/constant_climate.nc'),
-    air_temp_mean_annual=10,
-    air_temp_mean_july=15,
+    air_temp_mean_annual=8,
+    air_temp_mean_july=13,
     precipitation=2000)
 build_paleo_modifier(
     delta_T=delta_T_values,
@@ -303,10 +303,10 @@ for n, combination in enumerate(combinations):
                 pism_work_dir,
                 'data_sets/climate_forcing/paleo_modifier_T_{}_P_{}.nc'.format(delta_T, frac_P))
         cmd = ['cp', climate_file, 
-                os.path.join(odir, 'climate_file_{}.nc'.format(experiment))]
+                os.path.join(odir, 'climate_file_'+outfile)]
         sub.call(cmd)
         cmd = ['cp', atmosphere_paleo_file, 
-                os.path.join(odir, 'atmosphere_paleo_file_{}.nc'.format(experiment))]
+                os.path.join(odir, 'atmosphere_paleo_file_'+outfile)]
         sub.call(cmd)
         climate_params_dict = generate_climate(
             climate,
