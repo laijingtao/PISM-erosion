@@ -107,12 +107,20 @@ state_dir = 'state'
 scalar_dir = 'scalar'
 spatial_dir = 'spatial'
 postproc_dir = 'postproc'
+initdata_dir = 'init_data'
 odir = os.path.join(pism_data_dir, odir)
 if not os.path.isdir(odir):
     os.mkdir(odir)
-for tsdir in [perf_dir, scalar_dir, spatial_dir, state_dir, postproc_dir]:
+for tsdir in [perf_dir, scalar_dir, spatial_dir, state_dir, postproc_dir, initdata_dir]:
     if not os.path.isdir(os.path.join(odir, tsdir)):
         os.mkdir(os.path.join(odir, tsdir))
+if input_file is None:
+    cmd = ['cp', pism_dataname, 
+            os.path.join(odir, initdata_dir, 'initial_condition.nc')]
+else:
+    cmd = ['cp', input_file, 
+            os.path.join(odir, initdata_dir, 'initial_condition.nc')]
+sub.call(cmd)
 odir_tmp = '_'.join([odir, 'tmp'])
 if not os.path.isdir(odir_tmp):
     os.mkdir(odir_tmp)
@@ -174,11 +182,11 @@ topg_min_values = [-500]
 topg_max_values = [4000]
 temp_lapse_rate_values = [6.0]
 if do_delta_T:
-    delta_T_values = [-1.5, 0.0, 1.5]
+    delta_T_values = [-3.0, 0.0, 3.0]
 else:
     delta_T_values = [0.0]
 if do_frac_P:
-    frac_P_values = [0.8, 1.0, 1.2]
+    frac_P_values = [0.5, 1.0, 1.5]
 else:
     frac_P_values = [1.0]
 combinations = list(itertools.product(precip_scale_factor_values,
@@ -200,9 +208,9 @@ print pism_dataname
 build_constant_climate(
     infile=pism_dataname,
     outfile=os.path.join(pism_work_dir, 'data_sets/climate_forcing/constant_climate.nc'),
-    air_temp_mean_annual=8,
-    air_temp_mean_july=13,
-    precipitation=2000)
+    air_temp_mean_annual=0,
+    air_temp_mean_july=5,
+    precipitation=1000)
 build_paleo_modifier(
     delta_T=delta_T_values,
     frac_P=frac_P_values,
@@ -303,10 +311,10 @@ for n, combination in enumerate(combinations):
                 pism_work_dir,
                 'data_sets/climate_forcing/paleo_modifier_T_{}_P_{}.nc'.format(delta_T, frac_P))
         cmd = ['cp', climate_file, 
-                os.path.join(odir, 'climate_file_'+outfile)]
+                os.path.join(odir, initdata_dir, 'climate_file_'+outfile)]
         sub.call(cmd)
         cmd = ['cp', atmosphere_paleo_file, 
-                os.path.join(odir, 'atmosphere_paleo_file_'+outfile)]
+                os.path.join(odir, initdata_dir, 'atmosphere_paleo_file_'+outfile)]
         sub.call(cmd)
         climate_params_dict = generate_climate(
             climate,
