@@ -26,7 +26,9 @@ def add_flat_surface(infile=None, outfile=None, width=20000.0, loc='both', flat_
         z_tmp = np.concatenate((z_in, z_flat), axis=1)
         z_out = np.concatenate((z_flat, z_tmp), axis=1)
     
-    z_out[np.where(z_out==z_in_var._FillValue)] = np.nan
+    fill_value = -2.0e9
+    #fill_value = z_in_var._FillValue
+    z_out[np.where(z_out==fill_value)] = np.nan
     z_out = np.ma.array(z_out, mask=np.isnan(z_out))
     #z_out -= z_out.min()
 
@@ -58,7 +60,7 @@ def add_flat_surface(infile=None, outfile=None, width=20000.0, loc='both', flat_
     y_var.standard_name = 'projection_y_coordinate'
 
     z_var = outdata.createVariable('topg', np.float64, ('y', 'x',),
-                                   fill_value=z_in_var._FillValue)
+                                   fill_value=fill_value)
     z_var[:] = z_out
     z_var.units = 'm'
     z_var.standard_name = 'bedrock_altitude'
