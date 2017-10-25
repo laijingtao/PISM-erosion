@@ -334,7 +334,7 @@ def calc_erosion_space_averaged(infile=None, outfile=None):
     if not overwrite:
         outdata.close()
 
-def calc_erosion_time_averaged(infile=None, outfile=None):
+def calc_erosion_time_averaged(infile=None, outfile=None, unstable_time=500):
     if infile is None:
         sys.exit('Must provide an input file!')
     overwrite = False
@@ -351,21 +351,24 @@ def calc_erosion_time_averaged(infile=None, outfile=None):
         outdata = Dataset(outfile, 'a')
 
     time = indata.variables['time'][:]/(365*24*3600.)
+    for start_index in range(len(time)):
+        if time[start_index]>=time[0]+unstable_time:
+            break
 
     for erosion_name in ['erosion_1', 'erosion_2']:
         erosion = indata.variables[erosion_name][:]
         erosion_time_averaged = np.zeros(erosion[0].shape)
-        for i in range(len(erosion)):
+        for i in range(start_index, len(erosion)):
             tmp_erosion_slice = erosion[i].data
             tmp_erosion_slice[np.where(erosion[i].mask)] = 0.
-            if i==0:
+            if i==start_index:
                 time_step = (time[i+1]-time[i])/2
             elif i==len(time)-1:
                 time_step = (time[i]-time[i-1])/2
             else:
                 time_step = (time[i+1]-time[i-1])/2
             erosion_time_averaged = erosion_time_averaged+tmp_erosion_slice*time_step
-        erosion_time_averaged = erosion_time_averaged/(time[-1]-time[0])
+        erosion_time_averaged = erosion_time_averaged/(time[-1]-time[start_index])
         erosion_time_averaged[np.where(erosion_time_averaged<=0.)] =\
             indata.variables[erosion_name]._FillValue
         try:
@@ -434,7 +437,7 @@ def calc_percent_of_time_covered_by_ice(infile=None, outfile=None):
     if not overwrite:
         outdata.close()
 
-def calc_thk_time_averaged(infile=None, outfile=None):
+def calc_thk_time_averaged(infile=None, outfile=None, unstable_time=500):
     fill_value = -2e9
     if infile is None:
         sys.exit('Must provide an input file!')
@@ -452,19 +455,22 @@ def calc_thk_time_averaged(infile=None, outfile=None):
         outdata = Dataset(outfile, 'a')
 
     time = indata.variables['time'][:]/(365*24*3600.)
+    for start_index in range(len(time)):
+        if time[start_index]>=time[0]+unstable_time:
+            break
 
     thk = indata.variables['thk'][:]
     thk_time_averaged = np.zeros(thk[0].shape)
-    for i in range(len(thk)):
+    for i in range(start_index, len(thk)):
         tmp_thk_slice = thk[i]
-        if i==0:
+        if i==start_index:
             time_step = (time[i+1]-time[i])/2
         elif i==len(time)-1:
             time_step = (time[i]-time[i-1])/2
         else:
             time_step = (time[i+1]-time[i-1])/2
         thk_time_averaged = thk_time_averaged+tmp_thk_slice*time_step
-    thk_time_averaged = thk_time_averaged/(time[-1]-time[0])
+    thk_time_averaged = thk_time_averaged/(time[-1]-time[start_index])
     thk_time_averaged[np.where(thk_time_averaged<=0.)] = fill_value
     thk_time_averaged = np.ma.masked_values(thk_time_averaged,
                                             fill_value)
