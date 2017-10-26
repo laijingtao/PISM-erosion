@@ -13,7 +13,8 @@ from argparse import ArgumentParser
 import sys
 sys.path.append('../resources/')
 from resources import *
-from build_climate_file import *
+from build_climate_file import build_constant_climate, build_paleo_modifier
+from build_calving_file import build_ocean_kill_file
 
 
 # set up the option parser
@@ -332,7 +333,7 @@ for n, combination in enumerate(combinations):
 
         # Setup Carving Model
         #calving_params_dict = generate_calving('float_kill')
-        calving_params_dict = generate_calving('float_kill',
+        calving_params_dict = generate_calving('ocean_kill',
                                                ocean_kill_file=ocean_kill_file)
 
         # Setup Scalar and Spatial Time Series Reporting

@@ -12,7 +12,11 @@ def build_ocean_kill_file(infile=None, outfile=None, *args, **kwargs):
     except:
         thk = 0
     
-    write_data(infile, outfile, thk=thk)
+    indata = Dataset(infile, 'r')
+    topg = indata.variables['topg'][:]
+    indata.close()
+    
+    write_data(infile, outfile, thk=thk, topg=topg)
 
 def write_data(infile=None, outfile=None, *args, **kwargs):
     # dimensions of Olympic
@@ -29,6 +33,7 @@ def write_data(infile=None, outfile=None, *args, **kwargs):
         indata.close()
     outdata = Dataset(outfile, 'w')
 
+    topg = kwargs['topg']
     thk = kwargs['thk']
 
     dim_len = {'x': x_dim, 'y': y_dim, 'time': None}
@@ -41,9 +46,13 @@ def write_data(infile=None, outfile=None, *args, **kwargs):
         except:
             continue
 
-    var_name_list = ['thk']
-    var_value = {'thk': thk}
-    var_unit = {'thk': 'm'}
+    var_name_list = ['topg', 'thk']
+    var_value = {'topg': topg,
+                 'thk': thk}
+    var_unit = {'topg': 'm',
+                'thk': 'm'}
+    var_standard_name = {'topg': 'bedrock_altitude',
+                         'thk': 'land_ice_thickness'}
     for var_name in var_name_list:
         try:
             var = outdata.variables[var_name]
@@ -51,8 +60,7 @@ def write_data(infile=None, outfile=None, *args, **kwargs):
             var = outdata.createVariable(var_name, np.float64, ('y', 'x',))
         var[:] = var_value[var_name]
         var.units = var_unit[var_name]
-
-    outdata.variables['thk'].standard_name = 'land_ice_thickness'
+        var.standard_name = var_standard_name[var_name]
 
     outdata.close()
 
