@@ -8,6 +8,7 @@ import subprocess as sub
 
 def build_paleo_modifier(delta_T=[0.0], frac_P=[1.0], *args, **kwargs):
     climate_forcing_dir = kwargs['climate_forcing_dir']
+    out_dir = kwargs['out_dir']
     cmd = ['/usr/bin/ncgen', '-b', '-o',
            os.path.join(climate_forcing_dir, 'paleo_modifier.nc'),
            os.path.join(climate_forcing_dir, 'paleo_modifier.cdl')]
@@ -17,7 +18,7 @@ def build_paleo_modifier(delta_T=[0.0], frac_P=[1.0], *args, **kwargs):
         for T in delta_T:
             cmd = ['ncap2', '-O', '-s', 'delta_T(0)={};frac_P(0)={}'.format(T, P),
                    os.path.join(climate_forcing_dir, 'paleo_modifier.nc'),
-                   os.path.join(climate_forcing_dir, 'paleo_modifier_T_{}_P_{}.nc'.format(T, P))]
+                   os.path.join(out_dir, 'paleo_modifier_T_{}_P_{}.nc'.format(T, P))]
             print ' '.join(cmd)
             sub.call(cmd)
 

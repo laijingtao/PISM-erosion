@@ -146,8 +146,6 @@ else:
 cmd = [ncgen, '-o', pism_config_nc, pism_config_cdl]
 sub.call(cmd)
 
-hydrology = 'diffuse'
-
 # Check if perform sensitivity study
 params_list = options.params_list
 do_delta_T = False
@@ -207,19 +205,27 @@ tsstep = 'yearly'
 print pism_dataname
 build_constant_climate(
     infile=pism_dataname,
-    outfile=os.path.join(pism_work_dir, 'data_sets/climate_forcing/constant_climate.nc'),
+    outfile=os.path.join(odir, initdata_dir, 'constant_climate.nc'),
     air_temp_mean_annual=0,
     air_temp_mean_july=5,
     precipitation=1000)
 build_paleo_modifier(
     delta_T=delta_T_values,
     frac_P=frac_P_values,
-    climate_forcing_dir=os.path.join(pism_work_dir, 'data_sets/climate_forcing'))
+    climate_forcing_dir=os.path.join(pism_work_dir, 'data_sets/climate_forcing'),
+    out_dir=os.path.join(odir, initdata_dir))
+
+# Setup calving file
+ocean_kill_file = os.path.join(odir, initdata_dir, 'ocean_kill_file.nc')
+build_ocean_kill_file(infile=pism_dataname,
+                      outfile=ocean_kill_file,
+                      thk=0)
 
 scripts = []
 scripts_post = []
 outfile_names = []
 
+# Generate pism script
 for n, combination in enumerate(combinations):
 
     precip_scale_factor, sia_e, ppq, tefo, phi_min, phi_max, topg_min, topg_max, temp_lapse_rate, delta_T, frac_P = combination
@@ -305,17 +311,9 @@ for n, combination in enumerate(combinations):
         stress_balance_params_dict = generate_stress_balance(stress_balance, sb_params_dict)
 
         # Setup Climate Forcing
-        climate_file = os.path.join(
-                pism_work_dir, 'data_sets/climate_forcing/constant_climate.nc')
+        climate_file = os.path.join(odir, initdata_dir, 'constant_climate.nc')
         atmosphere_paleo_file = os.path.join(
-                pism_work_dir,
-                'data_sets/climate_forcing/paleo_modifier_T_{}_P_{}.nc'.format(delta_T, frac_P))
-        cmd = ['cp', climate_file, 
-                os.path.join(odir, initdata_dir, 'climate_file_'+outfile)]
-        sub.call(cmd)
-        cmd = ['cp', atmosphere_paleo_file, 
-                os.path.join(odir, initdata_dir, 'atmosphere_paleo_file_'+outfile)]
-        sub.call(cmd)
+                odir, initdata_dir, 'paleo_modifier_T_{}_P_{}.nc'.format(delta_T, frac_P))
         climate_params_dict = generate_climate(
             climate,
             **{'atmosphere_yearly_cycle_file': climate_file,
@@ -330,10 +328,12 @@ for n, combination in enumerate(combinations):
         ocean_params_dict = generate_ocean('null')
 
         # Setup Hydrology Model
-        hydro_params_dict = generate_hydrology(hydrology)
+        hydro_params_dict = generate_hydrology('diffuse')
 
         # Setup Carving Model
-        calving_params_dict = generate_calving('float_kill')
+        #calving_params_dict = generate_calving('float_kill')
+        calving_params_dict = generate_calving('float_kill',
+                                               ocean_kill_file=ocean_kill_file)
 
         # Setup Scalar and Spatial Time Series Reporting
         exvars = default_spatial_ts_vars()
