@@ -209,10 +209,11 @@ def calc_erosion(infile=None, outfile=None):
     else:
         nc_copy_dim(infile, outfile)
 
-    indata = Dataset(infile, 'a')
     if overwrite:
+        indata = Dataset(infile, 'a')
         outdata = indata
     else:
+        indata = Dataset(infile, 'r')
         outdata = Dataset(outfile, 'a')
 
     time = indata.variables['time'][:]
@@ -252,10 +253,11 @@ def calc_total_erosion(infile=None, outfile=None):
     else:
         nc_copy_dim(infile, outfile)
 
-    indata = Dataset(infile, 'a')
     if overwrite:
+        indata = Dataset(infile, 'a')
         outdata = indata
     else:
+        indata = Dataset(infile, 'r')
         outdata = Dataset(outfile, 'a')
 
     time = indata.variables['time'][:]
@@ -306,10 +308,11 @@ def calc_erosion_space_averaged(infile=None, outfile=None):
     else:
         nc_copy_dim(infile, outfile)
 
-    indata = Dataset(infile, 'a')
     if overwrite:
+        indata = Dataset(infile, 'a')
         outdata = indata
     else:
+        indata = Dataset(infile, 'r')
         outdata = Dataset(outfile, 'a')
 
     time = indata.variables['time'][:]
@@ -344,10 +347,11 @@ def calc_erosion_time_averaged(infile=None, outfile=None, unstable_time=500):
     else:
         nc_copy_dim(infile, outfile)
 
-    indata = Dataset(infile, 'a')
     if overwrite:
+        indata = Dataset(infile, 'a')
         outdata = indata
     else:
+        indata = Dataset(infile, 'r')
         outdata = Dataset(outfile, 'a')
 
     time = indata.variables['time'][:]/(365*24*3600.)
@@ -394,10 +398,11 @@ def calc_percent_of_time_covered_by_ice(infile=None, outfile=None):
     else:
         nc_copy_dim(infile, outfile)
 
-    indata = Dataset(infile, 'a')
     if overwrite:
+        indata = Dataset(infile, 'a')
         outdata = indata
     else:
+        indata = Dataset(infile, 'r')
         outdata = Dataset(outfile, 'a')
     
     time = indata.variables['time'][:]/(365*24*3600.)
@@ -448,10 +453,11 @@ def calc_thk_time_averaged(infile=None, outfile=None, unstable_time=500):
     else:
         nc_copy_dim(infile, outfile)
 
-    indata = Dataset(infile, 'a')
     if overwrite:
+        indata = Dataset(infile, 'a')
         outdata = indata
     else:
+        indata = Dataset(infile, 'r')
         outdata = Dataset(outfile, 'a')
 
     time = indata.variables['time'][:]/(365*24*3600.)
@@ -487,3 +493,68 @@ def calc_thk_time_averaged(infile=None, outfile=None, unstable_time=500):
     indata.close()
     if not overwrite:
         outdata.close()
+
+def calc_time_percent(infile=None, outfile=None, *args, **kwargs):
+    # Percent% of the time the value of var is lower than the return value
+
+    fill_value = -2e9
+
+    try:
+        var_name = kwargs['var']
+    except:
+        sys.exit('Must provide a var name!')
+    try:
+        percent = kwargs['percent']
+    except:
+        sys.exit('Must provide a percent!')
+    
+    if infile is None:
+        sys.exit('Must provide an input file!')
+    overwrite = False
+    if outfile is None or outfile==infile:
+        outfile = infile
+        overwrite = True
+    else:
+        nc_copy_dim(infile, outfile)
+
+    if overwrite:
+        indata = Dataset(infile, 'a')
+        outdata = indata
+    else:
+        indata = Dataset(infile, 'r')
+        outdata = Dataset(outfile, 'a')
+
+    time = indata.variables['time'][:]/(365*24*3600.)
+
+    var_sorted = indata.variables[var_name][:].copy()
+    var_sorted.sort(axis=0)
+
+    ncols, nrows = var_sorted[0].shape
+    var_percent_value = np.zeros((ncols, nrows))
+    for i in range(ncols):
+        for j in range(nrows):
+            try:
+                n_time = var_sorted[:, i, j].count()
+            except:
+                n_time = len(var_sorted[:, i, j])
+            if n_time==0:
+                var_percent_value[i, j] = fill_value
+            else:
+                index = int(percent/100.0*n_time-1)
+                var_percent_value[i, j] = var_sorted[:, i, j][index]
+    var_percent_value[np.where(var_percent_value<=0)] = fill_value
+    var_percent_value = np.ma.masked_values(var_percent_value, fill_value)
+
+    try:
+        var_percent = outdata.createVariable(
+            '{}_time_{}_percent'.format(var_name, percent), np.float64, ('y','x',),
+            fill_value=fill_value)
+    except:
+        var_percent = outdata.variables['{}_time_{}_percent'.format(var_name, percent)]
+    var_percent[:] = var_percent_value
+    var_percent.units = indata.variables[var_name].units
+
+    indata.close()
+    if not overwrite:
+        outdata.close()
+    
