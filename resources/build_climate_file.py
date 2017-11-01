@@ -84,7 +84,7 @@ def write_data(infile=None, outfile=None, *args, **kwargs):
                  'usurf': usurf}
     var_unit = {'air_temp_mean_annual': 'celsius',
                  'air_temp_mean_july': 'celsius',
-                 'precipitation': 'mm yr-1',
+                 'precipitation': 'kg m-2 year-1',
                  'usurf': 'm'}
     for var_name in var_name_list:
         try:
