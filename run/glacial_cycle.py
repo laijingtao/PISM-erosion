@@ -207,8 +207,8 @@ print pism_dataname
 build_constant_climate(
     infile=pism_dataname,
     outfile=os.path.join(odir, initdata_dir, 'constant_climate.nc'),
-    air_temp_mean_annual=0,
-    air_temp_mean_july=5,
+    air_temp_mean_annual=2,
+    air_temp_mean_july=7,
     precipitation=1000)
 build_paleo_modifier(
     delta_T=delta_T_values,
@@ -377,9 +377,12 @@ for n, combination in enumerate(combinations):
         f.write(post_header)
 
         extra_file = spatial_ts_dict['extra_file']
-        #myfiles = ' '.join(['{}_{:.3f}.nc'.format(extra_file, k) for k in np.arange(start + exstep, end, exstep)])
+        myfiles = ' '.join(['{}_{:.3f}.nc'.format(extra_file, k) \
+                            for k in np.arange(start + exstep, end, exstep)])
+        '''
         myfiles = ' '.join(['{}-{:012.3f}.nc'.format(extra_file, k) \
                             for k in np.arange(start + exstep, end, exstep)])
+        '''
         myoutfile = extra_file + '.nc'
         myoutfile = os.path.join(odir, spatial_dir, os.path.split(myoutfile)[-1])
         cmd = ' '.join(['ncrcat -O -6 -h', myfiles, myoutfile, '\n'])
