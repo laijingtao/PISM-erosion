@@ -181,7 +181,7 @@ topg_min_values = [-500]
 topg_max_values = [4000]
 temp_lapse_rate_values = [6.0]
 if do_delta_T:
-    delta_T_values = [-3.0, 0.0, 3.0]
+    delta_T_values = [-2.0, 0.0, 2.0]
 else:
     delta_T_values = [0.0]
 if do_frac_P:
@@ -207,8 +207,8 @@ print pism_dataname
 build_constant_climate(
     infile=pism_dataname,
     outfile=os.path.join(odir, initdata_dir, 'constant_climate.nc'),
-    air_temp_mean_annual=2,
-    air_temp_mean_july=7,
+    air_temp_mean_annual=3,
+    air_temp_mean_july=10,
     precipitation=1000)
 build_paleo_modifier(
     delta_T=delta_T_values,
@@ -332,9 +332,11 @@ for n, combination in enumerate(combinations):
         hydro_params_dict = generate_hydrology('diffuse')
 
         # Setup Carving Model
-        #calving_params_dict = generate_calving('float_kill')
+        calving_params_dict = generate_calving('float_kill')
+        '''
         calving_params_dict = generate_calving('ocean_kill',
                                                ocean_kill_file=ocean_kill_file)
+        '''
 
         # Setup Scalar and Spatial Time Series Reporting
         exvars = default_spatial_ts_vars()
