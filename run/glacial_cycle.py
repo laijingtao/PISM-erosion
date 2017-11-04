@@ -15,6 +15,7 @@ sys.path.append('../resources/')
 from resources import *
 from build_climate_file import build_constant_climate, build_paleo_modifier
 from build_calving_file import build_ocean_kill_file
+from read_params import read_params
 
 
 # set up the option parser
@@ -63,6 +64,8 @@ parser.add_argument("--stress_balance", dest="stress_balance",
                     help="stress balance solver", default='sia')
 parser.add_argument("-p", "--params", dest="params_list",
                     help="Comma-separated list with params for sensitivity", default=None)
+parser.add_argument("--params_file", dest="params_file",
+                    help="Parameters file", default=None)
 parser.add_argument("--batch_scripts_dir", dest="batch_scripts_dir",
                     help="directory to save batch scripts", default=None)
 
@@ -158,6 +161,8 @@ if params_list is not None:
     if 'frac_P' in params:
         do_frac_P = True
 
+params_file = options.params_file
+
 # ########################################################
 # set up model initialization
 # ########################################################
@@ -181,11 +186,11 @@ topg_min_values = [-500]
 topg_max_values = [4000]
 temp_lapse_rate_values = [6.0]
 if do_delta_T:
-    delta_T_values = [-2.0, 0.0, 2.0]
+    delta_T_values = read_params(params_file, param='delta_T')
 else:
     delta_T_values = [0.0]
 if do_frac_P:
-    frac_P_values = [0.5, 1.0, 1.5]
+    frac_P_values = read_params(params_file, param='frac_P')
 else:
     frac_P_values = [1.0]
 combinations = list(itertools.product(precip_scale_factor_values,
@@ -207,9 +212,9 @@ print pism_dataname
 build_constant_climate(
     infile=pism_dataname,
     outfile=os.path.join(odir, initdata_dir, 'constant_climate.nc'),
-    air_temp_mean_annual=3,
-    air_temp_mean_july=10,
-    precipitation=1000)
+    air_temp_mean_annual=read_params(params_file, param='air_temp_mean_annual'),
+    air_temp_mean_july=read_params(params_file, param='air_temp_mean_july'),
+    precipitation=read_params(params_file, param='precipitation'))
 build_paleo_modifier(
     delta_T=delta_T_values,
     frac_P=frac_P_values,
