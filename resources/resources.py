@@ -431,6 +431,24 @@ def generate_climate(climate, **kwargs):
             params_dict['atmosphere_paleo_precip_file'] = kwargs['atmosphere_paleo_precip_file']
         '''
         params_dict['surface'] = 'pdd'
+    elif climate in ('constant'):
+        params_dict['atmosphere'] = 'yearly_cycle,lapse_rate'
+        params_dict['surface.pdd.factor_ice'] = 4.59 / ice_density  # Shea et al (2009)
+        params_dict['surface.pdd.factor_snow'] = 3.04 / ice_density  # Shea et al (2009)
+        params_dict['surface.pdd.refreeze'] = 0
+        if 'atmosphere_yearly_cycle_file' not in kwargs:
+            params_dict['atmosphere_yearly_cycle_file'] = 'constant_climate.nc'
+        else:
+            params_dict['atmosphere_yearly_cycle_file'] = kwargs['atmosphere_yearly_cycle_file']
+        if 'temp_lapse_rate' not in kwargs:
+            params_dict['temp_lapse_rate'] = 4.5
+        else:
+            params_dict['temp_lapse_rate'] = kwargs['temp_lapse_rate']
+        if 'atmosphere_lapse_rate_file' not in kwargs:
+            params_dict['atmosphere_lapse_rate_file'] = 'constant_climate.nc'
+        else:
+            params_dict['atmosphere_lapse_rate_file'] = kwargs['atmosphere_lapse_rate_file']
+        params_dict['surface'] = 'pdd'
     else:
         print('climate {} not recognized, exiting'.format(climate))
         import sys
