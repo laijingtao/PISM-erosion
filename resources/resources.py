@@ -432,7 +432,7 @@ def generate_climate(climate, **kwargs):
         '''
         params_dict['surface'] = 'pdd'
     elif climate in ('constant'):
-        params_dict['atmosphere'] = 'yearly_cycle,lapse_rate'
+        params_dict['atmosphere'] = 'yearly_cycle,lapse_rate,delta_T,frac_P'
         params_dict['surface.pdd.factor_ice'] = 4.59 / ice_density  # Shea et al (2009)
         params_dict['surface.pdd.factor_snow'] = 3.04 / ice_density  # Shea et al (2009)
         params_dict['surface.pdd.refreeze'] = 0

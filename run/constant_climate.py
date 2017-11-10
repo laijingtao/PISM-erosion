@@ -303,17 +303,25 @@ for n, combination in enumerate(combinations):
 
         # Setup Climate Forcing
         climate_file = os.path.join(odir, initdata_dir, 'climate_'+outfile)
+        atmosphere_paleo_file = os.path.join(odir, initdata_dir, 'paleo_modifier_T_0.0_P_1.0.nc')
         build_constant_climate(
             infile=pism_dataname,
             outfile=climate_file,
             air_temp_mean_annual=air_temp_mean_annual,
             air_temp_mean_july=air_temp_mean_july,
             precipitation=precipitation)
+        build_paleo_modifier(
+            delta_T=[0.0],
+            frac_P=[1.0],
+            climate_forcing_dir=os.path.join(pism_work_dir, 'data_sets/climate_forcing'),
+            out_dir=os.path.join(odir, initdata_dir))
         climate_params_dict = generate_climate(
             climate,
             **{'atmosphere_yearly_cycle_file': climate_file,
                'atmosphere_lapse_rate_file': climate_file,
-               'temp_lapse_rate': temp_lapse_rate})
+               'temp_lapse_rate': temp_lapse_rate,
+               'atmosphere_delta_T_file': atmosphere_paleo_file,
+               'atmosphere_frac_P_file': atmosphere_paleo_file})
 
         # Setup Ocean Forcing
         ocean_params_dict = generate_ocean('null')
