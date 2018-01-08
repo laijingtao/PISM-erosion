@@ -113,21 +113,7 @@ spatial_dir = 'spatial'
 postproc_dir = 'postproc'
 initdata_dir = 'init_data'
 odir = os.path.join(pism_data_dir, odir)
-if not os.path.isdir(odir):
-    os.mkdir(odir)
-for tsdir in [perf_dir, scalar_dir, spatial_dir, state_dir, postproc_dir, initdata_dir]:
-    if not os.path.isdir(os.path.join(odir, tsdir)):
-        os.mkdir(os.path.join(odir, tsdir))
-if input_file is None:
-    cmd = ['cp', pism_dataname, 
-            os.path.join(odir, initdata_dir, 'initial_condition.nc')]
-else:
-    cmd = ['cp', input_file, 
-            os.path.join(odir, initdata_dir, 'initial_condition.nc')]
-sub.call(cmd)
 odir_tmp = '_'.join([odir, 'tmp'])
-if not os.path.isdir(odir_tmp):
-    os.mkdir(odir_tmp)
 batch_scripts_dir = options.batch_scripts_dir
 if batch_scripts_dir is None:
     if system in ['keeling']:
@@ -207,13 +193,6 @@ combinations = list(itertools.product(precip_scale_factor_values,
 
 tsstep = 'yearly'
 
-
-# Setup calving file
-ocean_kill_file = os.path.join(odir, initdata_dir, 'ocean_kill_file.nc')
-build_ocean_kill_file(infile=pism_dataname,
-                      outfile=ocean_kill_file,
-                      thk=0)
-
 scripts = []
 scripts_post = []
 outfile_names = []
@@ -232,9 +211,9 @@ for n, combination in enumerate(combinations):
     experiment =  '_'.join(
             [climate, '_'.join(['_'.join([k, str(v)]) for k, v in name_options.items()])])
 
-    script = 'cc_{}_g{}m_{}.sh'.format(domain.lower(), grid, experiment)
+    script = 'cc_ela_{}_g{}m_{}.sh'.format(domain.lower(), grid, experiment)
     scripts.append(script)
-    script_post = 'cc_{}_g{}m_{}_post.sh'.format(domain.lower(), grid, experiment)
+    script_post = 'cc_ela_{}_g{}m_{}_post.sh'.format(domain.lower(), grid, experiment)
     scripts_post.append(script_post)
 
     for filename in (script):
@@ -248,44 +227,30 @@ for n, combination in enumerate(combinations):
     with open(os.path.join(batch_scripts_dir, script), 'w') as f:
 
         f.write(batch_header)
+
+        input_file = '{domain}_g{grid}m_{experiment}_0_12000a.nc'.format(domain=domain.lower(),
+                                                                         grid=grid,
+                                                                         experiment=experiment)
+
+        outfile = 'ela_'+input_file
         
-        outfile = '{domain}_g{grid}m_{experiment}_{start}_{end}a.nc'.format(domain=domain.lower(),
-                                                                            grid=grid,
-                                                                            experiment=experiment,
-                                                                            start=int(start),
-                                                                            end=int(end))
         outfile_names.append(outfile)
 
         prefix = generate_prefix_str(pism_exec)
 
         # Setup General Parameters
         general_params_dict = OrderedDict()
-        if input_file is None:
-            general_params_dict['i'] = pism_dataname
-            general_params_dict['bootstrap'] = ''
-        else:
-            general_params_dict['i'] = input_file
-            if bootstrap:
-                general_params_dict['bootstrap'] = ''
+        general_params_dict['i'] = os.path.join(odir, state_dir, input_file)
         general_params_dict['ys'] = start
         general_params_dict['ye'] = end
-        general_params_dict['o'] = os.path.join(odir, state_dir, outfile)
+        general_params_dict['o'] = os.path.join(odir, postproc_dir, outfile)
         general_params_dict['o_format'] = oformat
         general_params_dict['o_size'] = osize
         general_params_dict['config_override'] = pism_config_nc
 
-        if input_file is None:
-            grid_params_dict = generate_grid_description(grid, accepted_resolutions(), domain,
-                                                         dem_file=pism_dataname)
-        else:
-            if bootstrap:
-                grid_params_dict = generate_grid_description(grid, accepted_resolutions(), 
-                                                             domain, dem_file=pism_dataname,
-                                                             restart=False)
-            else:
-                grid_params_dict = generate_grid_description(grid, accepted_resolutions(), 
-                                                             domain, dem_file=pism_dataname,
-                                                             restart=True)
+        grid_params_dict = generate_grid_description(grid, accepted_resolutions(), 
+                                                     domain, dem_file=pism_dataname,
+                                                     restart=True)
 
         # Setup Stress Balance Paramters
         sb_params_dict = OrderedDict()
@@ -302,19 +267,8 @@ for n, combination in enumerate(combinations):
         stress_balance_params_dict = generate_stress_balance(stress_balance, sb_params_dict)
 
         # Setup Climate Forcing
-        climate_file = os.path.join(odir, initdata_dir, 'climate_'+outfile)
+        climate_file = os.path.join(odir, initdata_dir, 'climate_'+input_file)
         atmosphere_paleo_file = os.path.join(odir, initdata_dir, 'paleo_modifier_T_0.0_P_1.0.nc')
-        build_constant_climate(
-            infile=pism_dataname,
-            outfile=climate_file,
-            air_temp_mean_annual=air_temp_mean_annual,
-            air_temp_mean_july=air_temp_mean_july,
-            precipitation=precipitation)
-        build_paleo_modifier(
-            delta_T=[0.0],
-            frac_P=[1.0],
-            climate_forcing_dir=os.path.join(pism_work_dir, 'data_sets/climate_forcing'),
-            out_dir=os.path.join(odir, initdata_dir))
         climate_params_dict = generate_climate(
             climate,
             **{'atmosphere_yearly_cycle_file': climate_file,
@@ -380,11 +334,11 @@ for n, combination in enumerate(combinations):
         myfiles = ' '.join(['{}_{:.3f}.nc'.format(extra_file, k) \
                             for k in np.arange(start + exstep, end, exstep)])
         myoutfile = extra_file + '.nc'
-        myoutfile = os.path.join(odir, spatial_dir, os.path.split(myoutfile)[-1])
+        myoutfile = os.path.join(odir, postproc_dir, os.path.split(myoutfile)[-1])
         cmd = ' '.join(['ncrcat -O -6 -h', myfiles, myoutfile, '\n'])
         f.write(cmd)
-        cmd = ' '.join(['ncks -O -4', os.path.join(odir, state_dir, outfile),
-                        os.path.join(odir, state_dir, outfile), '\n'])
+        cmd = ' '.join(['ncks -O -4', os.path.join(odir, postproc_dir, outfile),
+                        os.path.join(odir, postproc_dir, outfile), '\n'])
         f.write(cmd)
 
 
@@ -395,15 +349,11 @@ print('\nwritten\n')
 print '\n'.join([script for script in scripts_post])
 print('\nwritten\n')
 
-with open(os.path.join(odir, 'file_name_list.txt'), 'w') as f:
-    for outfile in outfile_names:
-        f.write(outfile+'\n')
-
 if system in ['keeling']:
     with open('submit_batch.sh', 'w') as f:
         f.write('#!/bin/bash\n\n')
         f.write('cd '+batch_scripts_dir+'\n')
         for script in scripts:
-            f.write('#sbatch {}\n'.format(script))
+            f.write('sbatch {}\n'.format(script))
     sub.call(['chmod', 'u+x', 'submit_batch.sh'])
 
