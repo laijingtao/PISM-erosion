@@ -343,6 +343,9 @@ def calc_time_averaged(infile=None, outfile=None, var_name=None, *args, **kwargs
     end_index = len(time)-1
 
     var = indata.variables[var_name][:]
+    if np.ma.is_masked(var):
+        var = var.data
+        var[np.where(var == fill_value)] = 0.0
     var_time_averaged = np.zeros(var[0].shape)
     for i in range(start_index, end_index+1):
         tmp_var_slice = var[i]
