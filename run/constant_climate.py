@@ -337,7 +337,34 @@ for n, combination in enumerate(combinations):
         '''
 
         # Setup Scalar and Spatial Time Series Reporting
-        exvars = default_spatial_ts_vars()
+        #exvars = default_spatial_ts_vars()
+        exvars = ['air_temp_snapshot',
+                  'beta',
+                  'bmelt',
+                  'cell_area',
+                  'climatic_mass_balance',
+                  'dHdt',
+                  'diffusivity',
+                  'effective_air_temp',
+                  'effective_precipitation',
+                  'ice_mass',
+                  'ice_surface_temp',
+                  'mask',
+                  'lat',
+                  'lon',
+                  'saccum',
+                  'smelt',
+                  'srunoff',
+                  'taub_mag',
+                  'taud_mag',
+                  'tempicethk_basal',
+                  'temppabase',
+                  'tempsurf',
+                  'thk',
+                  'topg',
+                  'usurf',
+                  'velbase_mag',
+                  'velsurf_mag']
         spatial_ts_dict = generate_spatial_ts(outfile, exvars, exstep, odir=odir_tmp, split=True)
         scalar_ts_dict = generate_scalar_ts(outfile, tsstep, odir=os.path.join(odir, scalar_dir))
 
